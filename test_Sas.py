@@ -19,7 +19,7 @@ for j in range(3):
 b=[pu0]+pu+[puL] #ok
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
-sm = Sasaki_metric(S2,S2_metric,5,20)
+sm = Sasaki_metric(S2,S2_metric)
 pp=S2.random_uniform(2)
 p0=pp[0]
 p0=np.array([0,0,1])

@@ -16,7 +16,6 @@ class Sasaki_metric:
     """
     TODO
     """
-
     def __init__(self, mf: Manifold, metric: RiemannianMetric = None, Ns=4, Nt=20):
         # super(Sasaki_metric, self).__init__(metric)
         self.manifold = mf
@@ -44,7 +43,7 @@ class Sasaki_metric:
             w = par_trans(w0, p0, p, None, w0)
             p0, u0 = p, u
             v0, w0 = v, w
-        return p, u
+        return [p, u]
 
     def log(self, puL, pu0):
         """
@@ -85,26 +84,21 @@ class Sasaki_metric:
 
         def loss(pu):
             # h is the loss function
-            p, u = pu[0], pu[1]
-            p, u = [p0, p, pL], [u0, u, uL]
-            pu = [pu0, pu, puL]
+            pu = [[pu0], pu, [puL]]
             #h = metric.dist(p[0], p[1])**2 + (np.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
             h = 0
             for j in range(Ns):
-                p1, u1, p2, u2 = p[j], u[j], p[j+1], u[j+1]
+                p1, u1, p2, u2 = pu[j][0], pu[j][1], pu[j+1][0], pu[j+1][1]
                 v1, w1 = metric.log(p2, p1), par_trans(u2, p2, None, p1) - u1
                 h += np.linalg.norm(v1)**2 + np.linalg.norm(w1)**2
             return .5 * h
 
         def grad(pu):
-            # h is the loss function
-            #p, u = pu[0], pu[1]
-            p, u = [p0, pu[:][0], pL], [u0, pu[:][1], uL]
-            #pux =[pu0, pu, puL]
+            pu = [[pu0], pu, [puL]]
             for j in range(Ns-1):
-                p1, u1 = p[j], u[j]
-                p2, u2 = p[j+1], u[j+1]
-                p3, u3 = p[j+2], u[j+2]
+                p1, u1 = pu[j][0], pu[j][1]
+                p2, u2 = pu[j+1][0], pu[j+1][1]
+                p3, u3 = pu[j+2][0], pu[j+2][1]
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
                 gp[j] = metric.log(p3, p2) + metric.log(p2, p1) - metric.curvature(u2, w, v, p2)
                 gu[j] = par_trans(u2, p2, None, p1) - 2 * u1 + par_trans(u0, p0, None, p1)
@@ -113,12 +107,12 @@ class Sasaki_metric:
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
         s = np.linspace(0, 1, Ns+1)
-        p_ini, u_ini = [], []
+        pu_ini = []
         for i in range(1, Ns):
-            p_ini.append(metric.exp(s[i] * v, p0))
-            u_ini.append((1 - s[i])*par_trans(u0, p0, None, p_ini) + s[i]*par_trans(uL, pL, None, p_ini))
+            p_ini = metric.exp(s[i] * v, p0)
+            u_ini = (1 - s[i])*par_trans(u0, p0, None, p_ini) + s[i]*par_trans(uL, pL, None, p_ini)
+            pu_ini.append([p_ini, u_ini])
 
-        pu_ini = [p_ini, u_ini]
         #pu_ini = np.array([p_ini, u_ini])
         # see, apply: examples.gradient_descent_s2
         previous_x = pu_ini
