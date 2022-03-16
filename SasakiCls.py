@@ -84,7 +84,7 @@ class Sasaki_metric:
 
         def loss(pu):
             # h is the loss function
-            pu = [[pu0], pu, [puL]]
+            pu = [pu0]+pu+[puL]
             #h = metric.dist(p[0], p[1])**2 + (np.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
             h = 0
             for j in range(Ns):
@@ -94,7 +94,7 @@ class Sasaki_metric:
             return .5 * h
 
         def grad(pu):
-            pu = [[pu0], pu, [puL]]
+            pu = [pu0]+pu+[puL]
             for j in range(Ns-1):
                 p1, u1 = pu[j][0], pu[j][1]
                 p2, u2 = pu[j+1][0], pu[j+1][1]
