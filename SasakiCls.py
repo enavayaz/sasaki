@@ -95,6 +95,7 @@ class Sasaki_metric:
 
         def grad(pu):
             pu = [pu0]+pu+[puL]
+            delta = eps
             for j in range(Ns-1):
                 p1, u1 = pu[j][0], pu[j][1]
                 p2, u2 = pu[j+1][0], pu[j+1][1]
@@ -102,8 +103,8 @@ class Sasaki_metric:
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
                 gp[j] = metric.log(p3, p2) + metric.log(p2, p1) - metric.curvature(u2, w, v, p2)
                 gu[j] = par_trans(u2, p2, None, p1) - 2 * u1 + par_trans(u0, p0, None, p1)
-            delta = eps
-            return -delta * np.array([gp, gu])
+                gp[j], gu[j] = - delta*gp[j], - delta*gu[j]
+            return [gp, gu]
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
         s = np.linspace(0, 1, Ns+1)
@@ -117,7 +118,7 @@ class Sasaki_metric:
         # see, apply: examples.gradient_descent_s2
         previous_x = pu_ini
         pu = []
-        for x, _ in gradient_descent(pu_ini, loss, grad):
+        for x, _ in gradient_descent(pu_ini, loss, grad, metric):
             ini_tang_vec = [metric.log(point=x[0], base_point=previous_x[0]), x[1] - previous_x[1]]
             geodesic = [metric.geodesic(initial_point=previous_x[0], initial_tangent_vec=ini_tang_vec[0]), x[1]]
             pu.append(geodesic(s))
