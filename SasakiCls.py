@@ -118,12 +118,12 @@ class Sasaki_metric:
         # see, apply: examples.gradient_descent_s2
         x, _ = gradient_descent(pu_ini, loss, grad, metric)
         previous_x = pu_ini
-        pu = []
-        for x, _ in gradient_descent(pu_ini, loss, grad, metric):
-            ini_tang_vec = [metric.log(point=x[0], base_point=previous_x[0]), x[1] - previous_x[1]]
-            geodesic = [metric.geodesic(initial_point=previous_x[0], initial_tangent_vec=ini_tang_vec[0]), x[1]]
-            pu.append(geodesic(s))
-            previous_x = [x[0], x[1]]
+        # pu = []
+        # for x, _ in gradient_descent(pu_ini, loss, grad, metric):
+        #     ini_tang_vec = [metric.log(point=x[0], base_point=previous_x[0]), x[1] - previous_x[1]]
+        #     geodesic = [metric.geodesic(initial_point=previous_x[0], initial_tangent_vec=ini_tang_vec[0]), x[1]]
+        #     pu.append(geodesic(s))
+        #     previous_x = [x[0], x[1]]
         return [pu0, x, puL]
 
     def dist(self, pu0, puL):

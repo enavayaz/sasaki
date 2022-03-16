@@ -76,4 +76,4 @@ def plot_and_save_Image(
         points = gs.to_ndarray(points, to_ndim=2)
         sphere.draw_points(ax, points=points, color=color, marker=".")
         #writer.grab_frame()
-    #plt.show()
+    plt.show()

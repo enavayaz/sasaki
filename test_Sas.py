@@ -38,7 +38,7 @@ for i in range(20):
     geods.append(S2.metric.exp(t[i]*S2.metric.log(pL,p0), p0))
 #plot_and_save_video(geods)
 plot_and_save_Image(geods)
-p, u = sm.geodesic([p0,u0],[pL,uL])
+[p, u] = sm.geodesic([p0,u0],[pL,uL])
 r = KendallShapeMetric(5,2)
 p = PreShapeSpace(5,2)
 s=Sasaki_metric(p,r)
