@@ -68,12 +68,24 @@ def plot_and_save_Image(
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111, projection="3d")
     sphere = visualization.Sphere()
-    # sphere.plot_heatmap(ax, loss)
-    points = gs.to_ndarray(geodesics[0], to_ndim=2)
-    sphere.add_points(points)
+    #sphere.plot_heatmap(ax, loss)
+    # points = gs.to_ndarray(geodesics[0], to_ndim=2)
+    # sphere.add_points(points)
     sphere.draw(ax, color=color, marker=".")
     for points in geodesics[1:]:
         points = gs.to_ndarray(points, to_ndim=2)
         sphere.draw_points(ax, points=points, color=color, marker=".")
         #writer.grab_frame()
+
+def VisGeodesicsTM(geo_in,geo_out,color_in, color_out, size=15):
+    fig = plt.figure(figsize=(size, size))
+    ax = fig.add_subplot(111, projection="3d")
+    sphere = visualization.Sphere()
+    sphere.draw(ax, marker=".")
+    for points in geo_in[1:]:
+        points = gs.to_ndarray(points, to_ndim=2)
+        sphere.draw_points(ax, points=points, color=color_in, marker=".")
+    for points in geo_out[1:]:
+        points = gs.to_ndarray(points, to_ndim=2)
+        sphere.draw_points(ax, points=points, color=color_out, marker=".")
     plt.show()

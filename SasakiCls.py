@@ -124,7 +124,7 @@ class Sasaki_metric:
         #     geodesic = [metric.geodesic(initial_point=previous_x[0], initial_tangent_vec=ini_tang_vec[0]), x[1]]
         #     pu.append(geodesic(s))
         #     previous_x = [x[0], x[1]]
-        return [pu0, x, puL]
+        return [pu0] + x + [puL]
 
     def dist(self, pu0, puL):
         [v, w] = self.log(puL, pu0)
