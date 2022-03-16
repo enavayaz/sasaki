@@ -116,6 +116,7 @@ class Sasaki_metric:
 
         #pu_ini = np.array([p_ini, u_ini])
         # see, apply: examples.gradient_descent_s2
+        x, _ = gradient_descent(pu_ini, loss, grad, metric)
         previous_x = pu_ini
         pu = []
         for x, _ in gradient_descent(pu_ini, loss, grad, metric):

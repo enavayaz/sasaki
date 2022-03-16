@@ -26,7 +26,8 @@ def gradient_descent(start, loss, grad, metric, manifold=None, lr=0.01, max_iter
             logging.info("reached precision %s", precision)
             logging.info("iterations: %d", i)
             break
-        yield x, loss(x)
+        #yield x, loss(x)
+    return x, loss(x)
 
 def vis(coords):
     plt.plot(coords[0, :], coords[1, :])
