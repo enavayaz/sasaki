@@ -26,7 +26,7 @@ First Application: Discrete Geodesics on the 2-Sphere
 """
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
-sm = Sasaki_metric(S2,S2_metric)
+sm = Sasaki_metric(S2_metric)
 #pp=S2.random_uniform(2)
 #p0=pp[0]
 p0=np.array([0,-1,0])
@@ -44,6 +44,8 @@ Nt=25
 t=np.linspace(0,1,Nt)
 #plot_and_save_video(geods)
 z = sm.geodesic([p0,u0],[pL,uL])
+vw0 = sm.log(puL, pu0)
+xx=sm.exp(vw0,pu0)
 for i in range(Nt):
     geods0L.append(S2.metric.exp(t[i]*u0, p0))
     geods0L.append(S2.metric.exp(t[i]*uL, pL))
@@ -61,5 +63,5 @@ Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
 # r = KendallShapeMetric(5,2)
 # p = PreShapeSpace(5,2)
-# s=Sasaki_metric(p,r)
+# s=Sasaki_metric(r)
 

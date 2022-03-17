@@ -6,14 +6,14 @@ import geomstats.backend as gs
 import logging
 #matplotlib.use("Agg")  # NOQA
 
-def gradient_descent(start, loss, grad, metric: RiemannianMetric, manifold=None, lr=0.01, max_iter=256, tol=1e-5):
+def gradient_descent(start, loss, grad, metric: RiemannianMetric, lr=0.01, max_iter=256, tol=1e-6):
     """Operate a gradient descent on a given manifold.
     Until either max_iter or a given precision is reached.
     """
     x = start
     for i in range(max_iter):
         x_prev, grad = x, grad(x)
-        for j in range(len(x)):  # TODO: update u
+        for j in range(len(x)):
             pj, uj, gradpj, graduj = x[j][0], x[j][1], -lr*grad[0][j], -lr*grad[1][j]
             #euclidean_grad = gradpj
             #tang_vec = gradpj
@@ -25,7 +25,7 @@ def gradient_descent(start, loss, grad, metric: RiemannianMetric, manifold=None,
 
         if gs.abs(loss(x) - loss(x_prev)) <= tol:
             logging.info("x: %s", x)
-            logging.info("reached precision %s", tol)
+            logging.info("reached tolerance %s", tol)
             logging.info("iterations: %d", i)
             break
         #yield x, loss(x)
