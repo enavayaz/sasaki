@@ -21,6 +21,9 @@ pux=[]
 for j in range(3):
     pux.append([np.array([j,j]), np.array([j,3])])
 b=[pux0]+pux+[puxL] #ok
+"""
+First Application: Discrete Geodesics on the 2-Sphere
+"""
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
 sm = Sasaki_metric(S2,S2_metric)
@@ -49,7 +52,14 @@ for j in range(1,len(z)-1):
     for i in range(20):
         geods.append(S2.metric.exp(t[i]*u1, p1))
 VisGeodesicsTM(geods0L,geods,'r','b',15)
-r = KendallShapeMetric(5,2)
-p = PreShapeSpace(5,2)
-s=Sasaki_metric(p,r)
-print("ja")
+"""
+Second Application: Clustering via Regression
+"""
+
+"""
+Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
+"""
+# r = KendallShapeMetric(5,2)
+# p = PreShapeSpace(5,2)
+# s=Sasaki_metric(p,r)
+
