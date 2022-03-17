@@ -4,7 +4,6 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.integrate import cumtrapz
 import util
-
 gradient_descent = util.gradient_descent
 
 from geomstats.geometry.riemannian_metric import RiemannianMetric

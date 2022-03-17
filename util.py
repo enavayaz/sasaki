@@ -1,11 +1,12 @@
 import matplotlib.pylab as plt
 import matplotlib.animation as animation
 import geomstats.visualization as visualization
+from geomstats.geometry.riemannian_metric import RiemannianMetric
 import geomstats.backend as gs
 import logging
 #matplotlib.use("Agg")  # NOQA
 
-def gradient_descent(start, loss, grad, metric, manifold=None, lr=0.01, max_iter=256, precision=1e-5):
+def gradient_descent(start, loss, grad, metric: RiemannianMetric, manifold=None, lr=0.01, max_iter=256, tol=1e-5):
     """Operate a gradient descent on a given manifold.
     Until either max_iter or a given precision is reached.
     """
@@ -15,15 +16,16 @@ def gradient_descent(start, loss, grad, metric, manifold=None, lr=0.01, max_iter
         for j in range(len(x)):  # TODO: update u
             pj, uj, gradpj, graduj = x[j][0], x[j][1], -lr*grad[0][j], -lr*grad[1][j]
             #euclidean_grad = gradpj
-            tang_vec = gradpj
+            #tang_vec = gradpj
             #if manifold is not None:
-            #    tangent_vec = manifold.to_tangent(vector=euclidean_grad, base_point=pj)
+            #    tang_vec = manifold.to_tangent(vector=euclidean_grad, base_point=pj)
             #x[j][0] = manifold.metric.exp(base_point=pj, tang_vec=tang_vec)
-            x[j][0] = metric.exp(base_point=pj, tangent_vec=tang_vec)
+            x[j][0] = metric.exp(base_point=pj, tangent_vec=gradpj)
+            x[j][1] = metric.parallel_transport(tangent_vec=uj+graduj, base_point=pj, end_point=x[j][0])
 
-        if gs.abs(loss(x) - loss(x_prev)) <= precision:
+        if gs.abs(loss(x) - loss(x_prev)) <= tol:
             logging.info("x: %s", x)
-            logging.info("reached precision %s", precision)
+            logging.info("reached precision %s", tol)
             logging.info("iterations: %d", i)
             break
         #yield x, loss(x)
