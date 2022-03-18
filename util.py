@@ -4,29 +4,28 @@ import geomstats.visualization as visualization
 from geomstats.geometry.riemannian_metric import RiemannianMetric
 import geomstats.backend as gs
 import logging
+import numpy as np
 #matplotlib.use("Agg")  # NOQA
 
 def gradient_descent(start, loss, grad, metric: RiemannianMetric, lr=0.01, max_iter=256, tol=1e-6):
-    """Operate a gradient descent on a given manifold.
-    Until either max_iter or a given precision is reached.
+    """
+    Apply a gradient descent until either max_iter or a given tolerance is reached.
     """
     x = start
     for i in range(max_iter):
-        x_prev, grad = x, grad(x)
+        x_prev, grad_x = x, grad(x)
         for j in range(len(x)):
-            pj, uj, gradpj, graduj = x[j][0], x[j][1], -lr*grad[0][j], -lr*grad[1][j]
-            #euclidean_grad = gradpj
-            #tang_vec = gradpj
-            #if manifold is not None:
-            #    tang_vec = manifold.to_tangent(vector=euclidean_grad, base_point=pj)
-            #x[j][0] = manifold.metric.exp(base_point=pj, tang_vec=tang_vec)
+            pj, uj, gradpj, graduj = x[j][0], x[j][1], -lr*grad_x[0][j], -lr*grad_x[1][j]
             x[j][0] = metric.exp(base_point=pj, tangent_vec=gradpj)
             x[j][1] = metric.parallel_transport(tangent_vec=uj+graduj, base_point=pj, end_point=x[j][0])
 
-        if gs.abs(loss(x) - loss(x_prev)) <= tol:
+        loss_x = loss(x)
+        if gs.abs(loss_x - loss(x_prev)) <= tol:
             logging.info("x: %s", x)
             logging.info("reached tolerance %s", tol)
             logging.info("iterations: %d", i)
+            logging.info("grad_norm: %s", np.linalg.norm(grad_x))
+            logging.info("loss: %s", loss_x)
             break
         #yield x, loss(x)
     return x, loss(x)
