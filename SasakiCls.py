@@ -9,7 +9,7 @@ gradient_descent = util.gradient_descent
 from geomstats.geometry.riemannian_metric import RiemannianMetric
 from geomstats.geometry.manifold import Manifold
 from geomstats.learning import geodesic_regression
-
+from geomstats.learning.frechet_mean import FrechetMean
 
 class Sasaki_metric:
     """
@@ -94,9 +94,9 @@ class Sasaki_metric:
                 p2, u2 = pu[j+1][0], pu[j+1][1]
                 p3, u3 = pu[j+2][0], pu[j+2][1]
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
-                gp[j] = metric.log(p3, p2) + metric.log(p2, p1) - metric.curvature(u2, w, v, p2)
-                gu[j] = par_trans(u2, p2, None, p1) - 2 * u1 + par_trans(u0, p0, None, p1)
-                gp[j], gu[j] = - eps*gp[j], - eps*gu[j]
+                gp[j] = metric.log(p3, p2) + metric.log(p1, p2) + metric.curvature(u2, w, v, p2)
+                gu[j] = par_trans(u3, p3, None, p2) - 2 * u2 + par_trans(u0, p0, None, p2)
+                gp[j], gu[j] = - Ns*gp[j], - Ns*gu[j]
             return [gp, gu]
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
@@ -107,9 +107,14 @@ class Sasaki_metric:
             u_ini = (1 - s[i])*par_trans(u0, p0, None, p_ini) + s[i]*par_trans(uL, pL, None, p_ini)
             pu_ini.append([p_ini, u_ini])
 
-        x, _ = gradient_descent(pu_ini, loss, grad, metric)
+        x = gradient_descent(pu_ini, loss, grad, metric)
         return [pu0] + x + [puL]
 
     def dist(self, pu0, puL):
         [v, w] = self.log(puL, pu0)
         return np.linalg.sqrt(np.linalg.norm(v)**2 + np.linalg.norm(w)**2)
+
+    def mean(self, pu):
+        FM = FrechetMean(self)
+        FM.fit(pu)
+        return FM.estimate_

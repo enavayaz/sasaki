@@ -7,28 +7,27 @@ import logging
 import numpy as np
 #matplotlib.use("Agg")  # NOQA
 
-def gradient_descent(start, loss, grad, metric: RiemannianMetric, lr=0.01, max_iter=256, tol=1e-6):
+def gradient_descent(pu_ini, loss, grad, metric: RiemannianMetric, lr=0.01, max_iter=256, tol=1e-6):
     """
     Apply a gradient descent until either max_iter or a given tolerance is reached.
     """
-    x = start
+    L = len(pu_ini)
+    pu = pu_ini
     for i in range(max_iter):
-        x_prev, grad_x = x, grad(x)
-        for j in range(len(x)):
-            pj, uj, gradpj, graduj = x[j][0], x[j][1], -lr*grad_x[0][j], -lr*grad_x[1][j]
-            x[j][0] = metric.exp(base_point=pj, tangent_vec=gradpj)
-            x[j][1] = metric.parallel_transport(tangent_vec=uj+graduj, base_point=pj, end_point=x[j][0])
-
-        loss_x = loss(x)
-        if gs.abs(loss_x - loss(x_prev)) <= tol:
-            logging.info("x: %s", x)
+        grad_pu, loss_pu = grad(pu), loss(pu)
+        grad_norm = np.linalg.norm(grad_pu)
+        if grad_norm < tol:
+            logging.info("[[point,vector]]: %s", pu)
             logging.info("reached tolerance %s", tol)
             logging.info("iterations: %d", i)
-            logging.info("grad_norm: %s", np.linalg.norm(grad_x))
-            logging.info("loss: %s", loss_x)
+            logging.info("|grad|: %s", grad_norm)
+            logging.info("energy: %s", loss_pu)
             break
-        #yield x, loss(x)
-    return x, loss(x)
+        for j in range(L):
+            pj, uj, gradpj, graduj = pu[j][0], pu[j][1], -lr*grad_pu[0][j], -lr*grad_pu[1][j]
+            pu[j][0] = metric.exp(base_point=pj, tangent_vec=gradpj)
+            pu[j][1] = metric.parallel_transport(tangent_vec=uj+graduj, base_point=pj, end_point=pu[j][0])
+    return pu
 
 def vis(coords):
     plt.plot(coords[0, :], coords[1, :])
@@ -43,8 +42,7 @@ def vis3D(coords):
     plt.show()
 
 def plot_and_save_video(
-    geodesics, loss=None, size=20, fps=10, dpi=100, out="out.mp4", color="red"
-):
+    geodesics, loss=None, size=20, fps=10, dpi=100, out="out.mp4", color="red"):
     """Render a set of geodesics and save it to an mpeg 4 file."""
     FFMpegWriter = animation.writers["ffmpeg"]
     writer = FFMpegWriter(fps=fps)
@@ -61,32 +59,13 @@ def plot_and_save_video(
             sphere.draw_points(ax, points=points, color=color, marker=".")
             writer.grab_frame()
 
-def plot_and_save_Image(
-        geodesics, loss=None, size=20, fps=10, dpi=100, out="out.png", color="red"
-):
-    """Render a set of geodesics and save it to an mpeg 4 file."""
-    #writer = FFMpegWriter(fps=fps)
-    fig = plt.figure(figsize=(size, size))
-    ax = fig.add_subplot(111, projection="3d")
-    sphere = visualization.Sphere()
-    #sphere.plot_heatmap(ax, loss)
-    # points = gs.to_ndarray(geodesics[0], to_ndim=2)
-    # sphere.add_points(points)
-    sphere.draw(ax, color=color, marker=".")
-    for points in geodesics[1:]:
-        points = gs.to_ndarray(points, to_ndim=2)
-        sphere.draw_points(ax, points=points, color=color, marker=".")
-        #writer.grab_frame()
-
-def VisGeodesicsTM(geo_in,geo_out,color_in, color_out, size=15):
+def VisGeodesicsTM(geo_list, color_list, size=15):
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111, projection="3d")
     sphere = visualization.Sphere()
     sphere.draw(ax, marker=".")
-    for points in geo_in[1:]:
-        points = gs.to_ndarray(points, to_ndim=2)
-        sphere.draw_points(ax, points=points, color=color_in, marker=".")
-    for points in geo_out[1:]:
-        points = gs.to_ndarray(points, to_ndim=2)
-        sphere.draw_points(ax, points=points, color=color_out, marker=".")
+    for i in range(len(color_list)):
+        for points in geo_list[i]:
+            points = gs.to_ndarray(points, to_ndim=2)
+            sphere.draw_points(ax, points=points, color=color_list[i], marker=".")
     plt.show()

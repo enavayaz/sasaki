@@ -8,7 +8,6 @@ import geomstats.backend as gs
 from util import VisGeodesicsTM
 
 import geomstats.visualization as visualization
-from util import plot_and_save_video, plot_and_save_Image
 import logging
 
 px0=np.array([0,1])
@@ -46,18 +45,23 @@ t=np.linspace(0,1,Nt)
 z = sm.geodesic([p0,u0],[pL,uL])
 vw0 = sm.log(puL, pu0)
 xx=sm.exp(vw0,pu0)
+geo_list, color_list = [], []
 for i in range(Nt):
     geods0L.append(S2.metric.exp(t[i]*u0, p0))
     geods0L.append(S2.metric.exp(t[i]*uL, pL))
+geo_list=[geods0L]
+color_list.append('r')
 for j in range(1,len(z)-1):
     p1, u1 =z[j][0], z[j][1]
     for i in range(20):
         geods.append(S2.metric.exp(t[i]*u1, p1))
-VisGeodesicsTM(geods0L,geods,'r','b',15)
+geo_list += [geods]
+color_list += 'b'
+VisGeodesicsTM(geo_list,color_list,15)
 """
 Second Application: Clustering via Regression
 """
-
+mean = sm.mean(z)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
