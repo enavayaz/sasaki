@@ -4,6 +4,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.integrate import cumtrapz
 import util
+
 gradient_descent = util.gradient_descent
 
 from geomstats.geometry.riemannian_metric import RiemannianMetric
@@ -11,10 +12,12 @@ from geomstats.geometry.manifold import Manifold
 from geomstats.learning import geodesic_regression
 from geomstats.learning.frechet_mean import FrechetMean
 
+
 class Sasaki_metric:
     """
     TODO
     """
+
     def __init__(self, metric: RiemannianMetric = None, Ns=4):
         self.metric = metric
         self.Ns = Ns
@@ -72,39 +75,40 @@ class Sasaki_metric:
         par_trans = metric.parallel_transport
         p0, u0 = pu0[0], pu0[1]
         pL, uL = puL[0], puL[1]
-        gp = [metric.log(p0, p0)]*(Ns-1)  # initial gradient with zero vectors
+        gp = [metric.log(p0, p0)] * (Ns - 1)  # initial gradient with zero vectors
         gu = gp
         eps = 1 / Ns
 
         def loss(pu):
             # h is the loss function
-            pu = [pu0]+pu+[puL]
-            #h = metric.dist(p[0], p[1])**2 + (np.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
+            pu = [pu0] + pu + [puL]
+            # h = metric.dist(p[0], p[1])**2 + (np.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
             h = 0
             for j in range(Ns):
-                p1, u1, p2, u2 = pu[j][0], pu[j][1], pu[j+1][0], pu[j+1][1]
+                p1, u1, p2, u2 = pu[j][0], pu[j][1], pu[j + 1][0], pu[j + 1][1]
                 v1, w1 = metric.log(p2, p1), par_trans(u2, p2, None, p1) - u1
-                h += np.linalg.norm(v1)**2 + np.linalg.norm(w1)**2
+                h += np.linalg.norm(v1) ** 2 + np.linalg.norm(w1) ** 2
             return .5 * h
 
         def grad(pu):
-            pu = [pu0]+pu+[puL]
-            for j in range(Ns-1):
+            pu = [pu0] + pu + [puL]
+            for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
-                p2, u2 = pu[j+1][0], pu[j+1][1]
-                p3, u3 = pu[j+2][0], pu[j+2][1]
+                p2, u2 = pu[j + 1][0], pu[j + 1][1]
+                p3, u3 = pu[j + 2][0], pu[j + 2][1]
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
                 gp[j] = metric.log(p3, p2) + metric.log(p1, p2) + metric.curvature(u2, w, v, p2)
                 gu[j] = par_trans(u3, p3, None, p2) - 2 * u2 + par_trans(u0, p0, None, p2)
-                gp[j], gu[j] = - Ns*gp[j], - Ns*gu[j]
+                gp[j], gu[j] = - Ns * gp[j], - Ns * gu[j]
             return [gp, gu]
+
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
-        s = np.linspace(0, 1, Ns+1)
+        s = np.linspace(0, 1, Ns + 1)
         pu_ini = []
         for i in range(1, Ns):
             p_ini = metric.exp(s[i] * v, p0)
-            u_ini = (1 - s[i])*par_trans(u0, p0, None, p_ini) + s[i]*par_trans(uL, pL, None, p_ini)
+            u_ini = (1 - s[i]) * par_trans(u0, p0, None, p_ini) + s[i] * par_trans(uL, pL, None, p_ini)
             pu_ini.append([p_ini, u_ini])
 
         x = gradient_descent(pu_ini, loss, grad, metric)
@@ -112,9 +116,22 @@ class Sasaki_metric:
 
     def dist(self, pu0, puL):
         [v, w] = self.log(puL, pu0)
-        return np.linalg.sqrt(np.linalg.norm(v)**2 + np.linalg.norm(w)**2)
+        return np.linalg.sqrt(np.linalg.norm(v) ** 2 + np.linalg.norm(w) ** 2)
 
-    def mean(self, pu):
-        FM = FrechetMean(self)
-        FM.fit(pu)
-        return FM.estimate_
+    def mean(self, pu, mean_ini=None):
+        max_iter = 256
+        # FM = FrechetMean(self)
+        # FM.fit(pu); FM.estimate_
+        def grad(x):
+            return -np.sum(np.array(self.log(puL=y, pu0=x)) for y in pu) / len(pu)
+        #grad = lambda a: np.sum(np.array((self.log)(a, b)) for b in pu) / len(pu)
+        if mean_ini is None:
+            mean_ini = pu[0]
+        #m = gradient_descent(mean_ini, None, grad, self.metric)
+        m = mean_ini
+        for _ in range(max_iter):
+            g = grad(m)
+            g_norm = np.linalg.norm(g)
+            if g_norm < 1e-8: break
+            m = self.exp(vw0=-g, pu0=m)
+        return m

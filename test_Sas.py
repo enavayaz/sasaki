@@ -2,6 +2,8 @@ import numpy as np
 from geomstats.geometry.manifold import Manifold
 from geomstats.geometry.riemannian_metric import RiemannianMetric
 from geomstats.geometry.pre_shape import PreShapeSpace, KendallShapeMetric
+from numpy.random import random
+
 from SasakiCls import Sasaki_metric
 from geomstats.geometry.hypersphere import Hypersphere
 import geomstats.backend as gs
@@ -47,25 +49,30 @@ vw0 = sm.log(puL, pu0)
 xx=sm.exp(vw0,pu0)
 geo_list, color_list = [], []
 for i in range(Nt):
-    geods0L.append(S2.metric.exp(t[i]*u0, p0))
-    geods0L.append(S2.metric.exp(t[i]*uL, pL))
+    geods0L.append(S2_metric.exp(t[i]*u0, p0))
+    geods0L.append(S2_metric.exp(t[i]*uL, pL))
 geo_list=[geods0L]
 color_list.append('r')
 for j in range(1,len(z)-1):
     p1, u1 =z[j][0], z[j][1]
     for i in range(20):
-        geods.append(S2.metric.exp(t[i]*u1, p1))
+        geods.append(S2_metric.exp(t[i]*u1, p1))
 geo_list += [geods]
 color_list += 'b'
 VisGeodesicsTM(geo_list,color_list,15)
 """
 Second Application: Clustering via Regression
 """
+m = np.array([[0, 1, 0], [1, 0, 1]])
+x = S2.random_riemannian_normal(m[0], n_samples=10)
+y = [S2.random_riemannian_normal(x[i]) for i in range(10)]
+u = [S2_metric.log(y[i], x[i]) for i in range(10)]
+#u = [S2_metric.parallel_transport(u[i],m[0],end_point=x[i]) ]
 mean = sm.mean(z)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
-# r = KendallShapeMetric(5,2)
+r = KendallShapeMetric(5,2)
 # p = PreShapeSpace(5,2)
 # s=Sasaki_metric(r)
 

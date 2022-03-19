@@ -7,23 +7,24 @@ import logging
 import numpy as np
 #matplotlib.use("Agg")  # NOQA
 
-def gradient_descent(pu_ini, loss, grad, metric: RiemannianMetric, lr=0.01, max_iter=256, tol=1e-6):
+def gradient_descent(pu_ini, loss, grad, metric: RiemannianMetric, lr=0.01, max_iter=256, tol=1e-8):
     """
     Apply a gradient descent until either max_iter or a given tolerance is reached.
     """
     L = len(pu_ini)
     pu = pu_ini
     for i in range(max_iter):
-        grad_pu, loss_pu = grad(pu), loss(pu)
+        grad_pu = grad(pu)
+        #loss_pu = loss(pu)
         grad_norm = np.linalg.norm(grad_pu)
         if grad_norm < tol:
-            logging.info("[[point,vector]]: %s", pu)
+            #logging.info("[[point,vector]]: %s", pu)
             logging.info("reached tolerance %s", tol)
             logging.info("iterations: %d", i)
             logging.info("|grad|: %s", grad_norm)
-            logging.info("energy: %s", loss_pu)
+            #logging.info("energy: %s", loss_pu)
             break
-        for j in range(L):
+        for j in range(L): # TODO: Besser update mit exp_sas?
             pj, uj, gradpj, graduj = pu[j][0], pu[j][1], -lr*grad_pu[0][j], -lr*grad_pu[1][j]
             pu[j][0] = metric.exp(base_point=pj, tangent_vec=gradpj)
             pu[j][1] = metric.parallel_transport(tangent_vec=uj+graduj, base_point=pj, end_point=pu[j][0])
