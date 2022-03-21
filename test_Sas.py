@@ -11,43 +11,25 @@ from util import VisGeodesicsTM
 
 import geomstats.visualization as visualization
 import logging
-
-px0=np.array([0,1])
-ux0 =np.array([-1, 0])
-pux0=[px0,ux0]
-pxL=np.array([2,2])
-uxL=np.array([-2,-2])
-puxL=[pxL,uxL]
-pux=[]
-for j in range(3):
-    pux.append([np.array([j,j]), np.array([j,3])])
-b=[pux0]+pux+[puxL] #ok
 """
 First Application: Discrete Geodesics on the 2-Sphere
 """
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
-sm = Sasaki_metric(S2_metric)
-#pp=S2.random_uniform(2)
-#p0=pp[0]
-p0=np.array([0,-1,0])
-u0=np.array([1,0,1])
+sm = Sasaki_metric(S2_metric,5)
+p0, u0 = np.array([0,-1,0]), np.array([1,0,1])
 pu0=[p0,u0]
-#p00=pp[1]
-#u0=S2_metric.log(p00,p0)
-#qq=S2.random_uniform(2)
-pL=np.array([1,0,0])
-uL=np.array([0,1,1])
+pL, uL = np.array([1,0,0]), np.array([0,1,1])
 puL=[pL,uL]
-geods=[]
-geods0L=[]
-Nt=25
-t=np.linspace(0,1,Nt)
+#m=sm.mean([pu0]+[puL])
 #plot_and_save_video(geods)
 z = sm.geodesic([p0,u0],[pL,uL])
 vw0 = sm.log(puL, pu0)
 xx=sm.exp(vw0,pu0)
 geo_list, color_list = [], []
+geods0L, geods =[], []
+Nt=25
+t=np.linspace(0,1,Nt)
 for i in range(Nt):
     geods0L.append(S2_metric.exp(t[i]*u0, p0))
     geods0L.append(S2_metric.exp(t[i]*uL, pL))
@@ -55,7 +37,7 @@ geo_list=[geods0L]
 color_list.append('r')
 for j in range(1,len(z)-1):
     p1, u1 =z[j][0], z[j][1]
-    for i in range(20):
+    for i in range(Nt):
         geods.append(S2_metric.exp(t[i]*u1, p1))
 geo_list += [geods]
 color_list += 'b'
@@ -67,8 +49,14 @@ m = np.array([[0, 1, 0], [1, 0, 1]])
 x = S2.random_riemannian_normal(m[0], n_samples=10)
 y = [S2.random_riemannian_normal(x[i]) for i in range(10)]
 u = [S2_metric.log(y[i], x[i]) for i in range(10)]
-#u = [S2_metric.parallel_transport(u[i],m[0],end_point=x[i]) ]
 mean = sm.mean(z)
+mp, mu =mean[0], mean[1]
+geom = []
+for i in range(Nt):
+    geom.append(S2_metric.exp(t[i]*mu, mp))
+geo_list += [geom]
+color_list += ['k']
+VisGeodesicsTM(geo_list,color_list,15)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """

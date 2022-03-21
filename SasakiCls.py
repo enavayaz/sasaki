@@ -23,7 +23,7 @@ class Sasaki_metric:
         self.Ns = Ns
         # super().__init__(metric, Ns)
 
-    def exp(self, vw0, pu0):
+    def exp(self, vw0, pu0, t=1):
         """
         Input: initial point pu= [p0,u0] in TM and initial
         velocity vw0=[v0,w0] tangent vectors at p0, where v0 horizontal and w0 vertical component
@@ -33,7 +33,7 @@ class Sasaki_metric:
         par_trans = metric.parallel_transport
         Ns = self.Ns
         eps = 1 / Ns
-        v0, w0 = vw0[0], vw0[1]
+        v0, w0 = t*vw0[0], t*vw0[1]
         p0, u0 = pu0[0], pu0[1]
         p, u = p0, u0
         for j in range(Ns - 1):
@@ -60,7 +60,7 @@ class Sasaki_metric:
         p0, u0 = pu0[0], pu0[1]
         w = (par_trans(u1, p1, None, p0) - u0) / eps
         v = metric.log(point=p1, base_point=p0) / eps
-        return [v, w]
+        return np.array([v, w])
 
     def geodesic(self, pu0, puL):
         """
@@ -75,8 +75,6 @@ class Sasaki_metric:
         par_trans = metric.parallel_transport
         p0, u0 = pu0[0], pu0[1]
         pL, uL = puL[0], puL[1]
-        gp = [metric.log(p0, p0)] * (Ns - 1)  # initial gradient with zero vectors
-        gu = gp
         eps = 1 / Ns
 
         def loss(pu):
@@ -91,16 +89,20 @@ class Sasaki_metric:
             return .5 * h
 
         def grad(pu):
+            #gp = metric.log(p0, p0)# initial gradient with zero vectors
+            #gu = gp
+            g = []
             pu = [pu0] + pu + [puL]
             for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
                 p2, u2 = pu[j + 1][0], pu[j + 1][1]
                 p3, u3 = pu[j + 2][0], pu[j + 2][1]
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
-                gp[j] = metric.log(p3, p2) + metric.log(p1, p2) + metric.curvature(u2, w, v, p2)
-                gu[j] = par_trans(u3, p3, None, p2) - 2 * u2 + par_trans(u0, p0, None, p2)
-                gp[j], gu[j] = - Ns * gp[j], - Ns * gu[j]
-            return [gp, gu]
+                gp = metric.log(p3, p2) + metric.log(p1, p2) + metric.curvature(u2, w, v, p2)
+                gu = par_trans(u3, p3, None, p2) - 2 * u2 + par_trans(u0, p0, None, p2)
+                gp, gu = - Ns * gp, - Ns * gu
+                g.append([gp, gu])
+            return np.array(g)
 
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
@@ -111,7 +113,7 @@ class Sasaki_metric:
             u_ini = (1 - s[i]) * par_trans(u0, p0, None, p_ini) + s[i] * par_trans(uL, pL, None, p_ini)
             pu_ini.append([p_ini, u_ini])
 
-        x = gradient_descent(pu_ini, loss, grad, metric)
+        x = gradient_descent(pu_ini, grad, self.exp)
         return [pu0] + x + [puL]
 
     def dist(self, pu0, puL):
@@ -119,19 +121,16 @@ class Sasaki_metric:
         return np.linalg.sqrt(np.linalg.norm(v) ** 2 + np.linalg.norm(w) ** 2)
 
     def mean(self, pu, mean_ini=None):
-        max_iter = 256
-        # FM = FrechetMean(self)
-        # FM.fit(pu); FM.estimate_
+        lrate, max_iter = 0.5, 100
         def grad(x):
-            return -np.sum(np.array(self.log(puL=y, pu0=x)) for y in pu) / len(pu)
-        #grad = lambda a: np.sum(np.array((self.log)(a, b)) for b in pu) / len(pu)
+            return -np.sum(self.log(y, m) for y in pu)/len(pu)
         if mean_ini is None:
             mean_ini = pu[0]
-        #m = gradient_descent(mean_ini, None, grad, self.metric)
+        #m1 = gradient_descent([mean_ini], grad, self.exp)
         m = mean_ini
         for _ in range(max_iter):
             g = grad(m)
             g_norm = np.linalg.norm(g)
-            if g_norm < 1e-8: break
-            m = self.exp(vw0=-g, pu0=m)
+            if g_norm < 1e-6: break
+            m = self.exp(vw0=-lrate*g, pu0=m)
         return m
