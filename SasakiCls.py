@@ -89,20 +89,20 @@ class Sasaki_metric:
             return .5 * h
 
         def grad(pu):
-            #gp = metric.log(p0, p0)# initial gradient with zero vectors
-            #gu = gp
-            g = []
-            pu = [pu0] + pu + [puL]
+            gp = metric.log(p0, p0)  # initial gradient with zero vectors
+            gu = gp
+            g = np.array([np.vstack((gp, gu))]*(Ns-1))
+            pu = [pu0] + pu + [puL]  # add boundary points to the list of points
             for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
                 p2, u2 = pu[j + 1][0], pu[j + 1][1]
                 p3, u3 = pu[j + 2][0], pu[j + 2][1]
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
                 gp = metric.log(p3, p2) + metric.log(p1, p2) + metric.curvature(u2, w, v, p2)
-                gu = par_trans(u3, p3, None, p2) - 2 * u2 + par_trans(u0, p0, None, p2)
-                gp, gu = - Ns * gp, - Ns * gu
-                g.append([gp, gu])
-            return np.array(g)
+                gu = par_trans(u3, p3, None, p2) - 2*u2 + par_trans(u0, p0, None, p2)
+                #g.append([gp, gu])
+                g[j][0], g[j][1] = gp, gu
+            return -Ns*g
 
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
@@ -123,10 +123,13 @@ class Sasaki_metric:
     def mean(self, pu, mean_ini=None):
         lrate, max_iter = 0.5, 100
         def grad(x):
-            return -np.sum(self.log(y, m) for y in pu)/len(pu)
+            #x = x[0]
+            g = -np.sum(self.log(y, x) for y in pu)/len(pu)
+            #return np.array([g])
+            return g
         if mean_ini is None:
             mean_ini = pu[0]
-        #m1 = gradient_descent([mean_ini], grad, self.exp)
+        #m1 = gradient_descent([mean_ini], grad, self.exp, 0.5, 100)
         m = mean_ini
         for _ in range(max_iter):
             g = grad(m)

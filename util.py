@@ -7,27 +7,27 @@ import logging
 import numpy as np
 #matplotlib.use("Agg")  # NOQA
 
-def gradient_descent(pu_ini, grad, exp, loss=None, lrate=0.01, max_iter=256, tol=1e-6):
+def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=256, tol=1e-6):
     """
     Apply a gradient descent until either max_iter or a given tolerance is reached.
     """
-    L = len(pu_ini)
-    pu = pu_ini
+    L = len(x_ini)
+    x = x_ini
     for i in range(max_iter):
-        grad_pu = grad(pu)
-        #loss_pu = loss(pu)
-        grad_norm = np.linalg.norm(grad_pu)
+        grad_x = grad(x)
+        #loss_x = loss(x)
+        grad_norm = np.linalg.norm(grad_x)
         if grad_norm < tol:
-            #logging.info("[[point,vector]]: %s", pu)
+            #logging.info("solution: %s", x)
             logging.info("reached tolerance %s", tol)
             logging.info("iterations: %d", i)
             logging.info("|grad|: %s", grad_norm)
-            #logging.info("energy: %s", loss_pu)
+            #logging.info("energy: %s", loss_x)
             break
-        grad_pu = -lrate * grad_pu
+        grad_x = -lrate * grad_x
         for j in range(L):
-            pu[j] = exp(grad_pu[j], pu[j])
-    return pu
+            x[j] = exp(grad_x[j], x[j])
+    return x
 
 def vis(coords):
     plt.plot(coords[0, :], coords[1, :])

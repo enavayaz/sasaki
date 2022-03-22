@@ -19,10 +19,9 @@ S2_metric = S2.metric
 sm = Sasaki_metric(S2_metric,5)
 p0, u0 = np.array([0,-1,0]), np.array([1,0,1])
 pu0=[p0,u0]
-pL, uL = np.array([1,0,0]), np.array([0,1,1])
+pL, uL = np.array([1,0,0]), np.array([0,1,0])
 puL=[pL,uL]
-#m=sm.mean([pu0]+[puL])
-#plot_and_save_video(geods)
+m=sm.mean([pu0]+[puL])
 z = sm.geodesic([p0,u0],[pL,uL])
 vw0 = sm.log(puL, pu0)
 xx=sm.exp(vw0,pu0)
@@ -42,6 +41,7 @@ for j in range(1,len(z)-1):
 geo_list += [geods]
 color_list += 'b'
 VisGeodesicsTM(geo_list,color_list,15)
+#plot_and_save_video(geods)
 """
 Second Application: Clustering via Regression
 """
