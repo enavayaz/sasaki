@@ -127,9 +127,13 @@ class Sasaki_metric:
             g = -np.sum(self.log(y, x) for y in pu)/len(pu)
             #return np.array([g])
             return g
+        def grad1(x):
+            #x = x[0]
+            g = -np.sum(self.log(y, x[0]) for y in pu)/len(pu)
+            return np.array([g])
         if mean_ini is None:
             mean_ini = pu[0]
-        #m1 = gradient_descent([mean_ini], grad, self.exp, 0.5, 100)
+        m1 = gradient_descent([mean_ini], grad1, self.exp, lrate=1, max_iter=100)
         m = mean_ini
         for _ in range(max_iter):
             g = grad(m)
