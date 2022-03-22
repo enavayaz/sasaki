@@ -5,7 +5,9 @@ from geomstats.geometry.riemannian_metric import RiemannianMetric
 import geomstats.backend as gs
 import logging
 import numpy as np
-#matplotlib.use("Agg")  # NOQA
+
+
+# matplotlib.use("Agg")  # NOQA
 
 def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=256, tol=1e-6):
     """
@@ -15,24 +17,28 @@ def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=256, tol=1
     x = x_ini
     for i in range(max_iter):
         grad_x = grad(x)
-        #loss_x = loss(x)
+        # loss_x = loss(x)
         grad_norm = np.linalg.norm(grad_x)
         if grad_norm < tol:
-            #logging.info("solution: %s", x)
+            # logging.info("solution: %s", x)
             logging.info("reached tolerance %s", tol)
             logging.info("iterations: %d", i)
             logging.info("|grad|: %s", grad_norm)
-            #logging.info("energy: %s", loss_x)
+            # logging.info("energy: %s", loss_x)
             break
         grad_x = -lrate * grad_x
         for j in range(L):
             x[j] = exp(grad_x[j], x[j])
     return x
 
+
 def vis(coords):
     plt.plot(coords[0, :], coords[1, :])
-    plt.axis('equal'); plt.xlabel('x'); plt.xlabel('y')
+    plt.axis('equal')
+    plt.xlabel('x')
+    plt.xlabel('y')
     plt.show()
+
 
 def vis3D(coords):
     fig = plt.figure()
@@ -41,15 +47,16 @@ def vis3D(coords):
     # plt.axis('equal');#plt.xlabel('x');plt.ylabel('y');plt.zlabel('z')
     plt.show()
 
+
 def plot_and_save_video(
-    geodesics, loss=None, size=20, fps=10, dpi=100, out="out.mp4", color="red"):
+        geodesics, loss=None, size=20, fps=10, dpi=100, out="out.mp4", color="red"):
     """Render a set of geodesics and save it to an mpeg 4 file."""
     FFMpegWriter = animation.writers["ffmpeg"]
     writer = FFMpegWriter(fps=fps)
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111, projection="3d")
     sphere = visualization.Sphere()
-    #sphere.plot_heatmap(ax, loss)
+    # sphere.plot_heatmap(ax, loss)
     points = gs.to_ndarray(geodesics[0], to_ndim=2)
     sphere.add_points(points)
     sphere.draw(ax, color=color, marker=".")
@@ -59,7 +66,8 @@ def plot_and_save_video(
             sphere.draw_points(ax, points=points, color=color, marker=".")
             writer.grab_frame()
 
-def VisGeodesicsTM(geo_list, color_list, size=15):
+
+def visGeodesicsTM(geo_list, color_list, size=15):
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111, projection="3d")
     sphere = visualization.Sphere()
