@@ -5,6 +5,7 @@ from geomstats.geometry.pre_shape import PreShapeSpace, KendallShapeMetric
 from numpy.random import random
 from sasaki_metric import SasakiMetric
 from geomstats.geometry.hypersphere import Hypersphere
+from geomstats.geometry.euclidean import  Euclidean
 import geomstats.backend as gs
 from util import visGeodesicsTM
 
@@ -45,10 +46,14 @@ visGeodesicsTM(geo_list, color_list, 15)
 """
 Second Application: Clustering via Regression
 """
+n_samples = 10
 m = np.array([[0, 1, 0], [1, 0, 1]])
-x = S2.random_riemannian_normal(m[0], n_samples=10)
-y = [S2.random_riemannian_normal(x[i]) for i in range(10)]
-u = [S2_metric.log(y[i], x[i]) for i in range(10)]
+x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
+u = Euclidean.random_point(n_samples)
+u =[S2.to_tangent(m[1]+u[i], m[0]) for i in range(10)]
+u = np.array([S2_metric.parallel_transport(u[i], m[0], None, x[i]) for i in range(10)])
+#y = [S2.random_riemannian_normal(x[i]) for i in range(10)]
+#u = [S2_metric.log(y[i], x[i]) for i in range(10)]
 mean = sm.mean(z)
 mp, mu = mean[0], mean[1]
 geom = []
