@@ -5,8 +5,6 @@ from geomstats.geometry.riemannian_metric import RiemannianMetric
 import geomstats.backend as gs
 import logging
 import numpy as np
-
-
 # matplotlib.use("Agg")  # NOQA
 
 def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=256, tol=1e-6):
@@ -31,7 +29,6 @@ def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=256, tol=1
             x[j] = exp(grad_x[j], x[j])
     return x
 
-
 def vis(coords):
     plt.plot(coords[0, :], coords[1, :])
     plt.axis('equal')
@@ -39,14 +36,12 @@ def vis(coords):
     plt.xlabel('y')
     plt.show()
 
-
 def vis3D(coords):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     plt.plot(coords[0, :], coords[1, :], coords[2, :])
     # plt.axis('equal');#plt.xlabel('x');plt.ylabel('y');plt.zlabel('z')
     plt.show()
-
 
 def plot_and_save_video(
         geodesics, loss=None, size=20, fps=10, dpi=100, out="out.mp4", color="red"):
@@ -65,7 +60,6 @@ def plot_and_save_video(
             points = gs.to_ndarray(points, to_ndim=2)
             sphere.draw_points(ax, points=points, color=color, marker=".")
             writer.grab_frame()
-
 
 def visGeodesicsTM(geo_list, color_list, size=15):
     fig = plt.figure(figsize=(size, size))
