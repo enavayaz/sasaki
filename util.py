@@ -7,7 +7,7 @@ import logging
 import numpy as np
 # matplotlib.use("Agg")  # NOQA
 
-def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=256, tol=1e-6):
+def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=100, tol=1e-6):
     """
     Apply a gradient descent until either max_iter or a given tolerance is reached.
     """
