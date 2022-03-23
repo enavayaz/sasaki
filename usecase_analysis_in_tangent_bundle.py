@@ -8,7 +8,6 @@ from geomstats.geometry.hypersphere import Hypersphere
 from geomstats.geometry.euclidean import  Euclidean
 import geomstats.backend as gs
 from util import visGeodesicsTM
-
 import geomstats.visualization as visualization
 import logging
 
@@ -23,7 +22,7 @@ p0, u0 = np.array([0, -1, 0]), np.array([1, 0, 1])
 pu0 = [p0, u0]
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
 puL = [pL, uL]
-m = sm.mean([pu0] + [puL])
+#m = sm.mean([pu0] + [puL])
 # print('Computing shortest path of geodesics')
 # z = sm.geodesic([p0, u0], [pL, uL])
 # vw0 = sm.log(puL, pu0)
@@ -49,15 +48,16 @@ color_list.append('r')
 Second Application: Clustering via Regression
 """
 m = np.array([[0, 1, 0], [0, 0, 1]])
-n_samples = 2
+n_samples, sigma = 10, np.pi/12
 x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
-u = np.array([S2_metric.log(y[i], x[i]) for i in range(n_samples)])
+x = [S2_metric.exp(sigma*S2_metric.log(x[i], m[0]), m[0]) for i in range(n_samples)]
+u = [m[1] + sigma*S2_metric.log(y[i], m[0]) for i in range(n_samples)]
 samples = [[x[i], u[i]] for i in range(n_samples)]
 print('Computing mean of geodesics')
 #mean = sm.mean(z)
 mean = sm.mean(samples)
-mp, mu = mean[0], mean[1]
+#mp, mu = mean[0], mean[1]
 meanvalue, data, geom = [], [], []
 for i in range(Nt):
     ti = t[i]
