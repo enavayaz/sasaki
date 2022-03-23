@@ -23,6 +23,7 @@ pu0 = [p0, u0]
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
 puL = [pL, uL]
 m = sm.mean([pu0] + [puL])
+print('Computing shortest path of geodesics')
 z = sm.geodesic([p0, u0], [pL, uL])
 vw0 = sm.log(puL, pu0)
 xx = sm.exp(vw0, pu0)
@@ -54,6 +55,7 @@ u =[S2.to_tangent(m[1]+u[i], m[0]) for i in range(10)]
 u = np.array([S2_metric.parallel_transport(u[i], m[0], None, x[i]) for i in range(10)])
 #y = [S2.random_riemannian_normal(x[i]) for i in range(10)]
 #u = [S2_metric.log(y[i], x[i]) for i in range(10)]
+print('Computing mean of geodesics')
 mean = sm.mean(z)
 mp, mu = mean[0], mean[1]
 geom = []
