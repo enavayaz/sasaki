@@ -24,7 +24,7 @@
     "from sasaki_metric import SasakiMetric\n",
     "from geomstats.geometry.hypersphere import Hypersphere\n",
     "import geomstats.backend as gs\n",
-    "from util import visGeodesicsTM\n",
+    "from util import visSphere\n",
     "import geomstats.visualization as visualization\n",
     "import logging"
    ]
@@ -835,7 +835,7 @@
     "        data.append(S2_metric.exp(ti * samples[j][1], samples[j][0]))\n",
     "geo_list = [meanvalue] + [data] + [geom]\n",
     "color_list = ['k'] + ['r'] + ['b']\n",
-    "visGeodesicsTM(geo_list, color_list, 15)"
+    "visSphere(geo_list, color_list, 15)"
    ],
    "metadata": {
     "collapsed": false,

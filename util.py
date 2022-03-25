@@ -62,7 +62,7 @@ def plot_and_save_video(
             sphere.draw_points(ax, points=points, color=color, marker=".")
             writer.grab_frame()
 
-def visGeodesicsTM(geo_list, color_list, size=15):
+def visSphere(geo_list, color_list, size=15):
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111, projection="3d")
     sphere = visualization.Sphere()
@@ -72,7 +72,9 @@ def visGeodesicsTM(geo_list, color_list, size=15):
             points = gs.to_ndarray(points, to_ndim=2)
             sphere.draw_points(ax, points=points, color=color_list[i], marker=".")
     #plt.show()
-
+def visKen(geo_list, color_list, size=15):
+    #TODO
+    return
 def load_data():
     d = np.loadtxt('rat_skulls.csv', delimiter=',', skiprows=0)
     dz=[]

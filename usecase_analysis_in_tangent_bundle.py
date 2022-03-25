@@ -10,7 +10,7 @@ from geomstats.learning.frechet_mean import FrechetMean
 from geomstats.geometry.euclidean import  Euclidean
 #import geomstats.datasets.utils as data_utils
 import geomstats.backend as gs
-from util import visGeodesicsTM, load_data
+from util import visSphere, visKen, load_data
 import geomstats.visualization as visualization
 import logging
 
@@ -46,7 +46,7 @@ for j in range(1, len(z) - 1):
         geods.append(S2_metric.exp(t[i] * u1, p1))
 geo_list += [geods]
 color_list += 'b'
-visGeodesicsTM(geo_list, color_list, 15)
+visSphere(geo_list, color_list, 15)
 # # plot_and_save_video(geods)
 """
 Second Application: Clustering via Regression
@@ -75,7 +75,7 @@ for i in range(Nt):
         data.append(S2_metric.exp(ti * samples[j][1], samples[j][0]))
 geo_list = [meanvalue] + [data] + [geom]
 color_list = ['k'] + ['r'] + ['b']
-visGeodesicsTM(geo_list, color_list, 15)
+visSphere(geo_list, color_list, 15)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
@@ -84,4 +84,4 @@ Ken = PreShapeSpace(5, 2)
 sas = SasakiMetric(KenMetric)
 samples = load_data()
 print(f"Total number of rat skulls: {len(samples)}")
-
+visKen
