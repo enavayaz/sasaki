@@ -18,14 +18,6 @@ import logging
 """
 First Application: Discrete Geodesics on the 2-Sphere
 """
-KenMetric = KendallShapeMetric(8, 2)
-Ken = PreShapeSpace(8, 2)
-sas = SasakiMetric(KenMetric)
-samples = load_data()
-print(f"Total number of rat skulls: {len(samples)}")
-samples = [Ken.projection(samples[i]) for i in range(144)]
-visKen([samples], ['r'])
-
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
 dd = load_data()
@@ -96,4 +88,8 @@ Ken = PreShapeSpace(8, 2)
 sas = SasakiMetric(KenMetric)
 samples = load_data()
 print(f"Total number of rat skulls: {len(samples)}")
+samples = [Ken.projection(samples[i]) for i in range(144)]
 visKen([samples], ['r'])
+# Regression
+# TPCA
+# Learnin
