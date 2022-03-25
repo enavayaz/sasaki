@@ -5,6 +5,7 @@ from geomstats.geometry.riemannian_metric import RiemannianMetric
 import geomstats.backend as gs
 import logging
 import numpy as np
+import csv
 # matplotlib.use("Agg")  # NOQA
 
 def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=100, tol=1e-6):
@@ -70,4 +71,16 @@ def visGeodesicsTM(geo_list, color_list, size=15):
         for points in geo_list[i]:
             points = gs.to_ndarray(points, to_ndim=2)
             sphere.draw_points(ax, points=points, color=color_list[i], marker=".")
-    plt.show()
+    #plt.show()
+
+def load_data():
+    d = np.loadtxt('rat_skulls.csv', delimiter=',', skiprows=0)
+    dz=[]
+    for i in range(144):
+        a = np.zeros((8, 2))
+        for j in range(8):
+            a[j][0]=d[i][j]
+            a[j][1]=d[i][j+8]
+        dz.append(a)
+    np.save('rat_skulls.npy', dz)
+    return dz

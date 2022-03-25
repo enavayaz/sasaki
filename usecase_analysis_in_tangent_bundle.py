@@ -8,8 +8,9 @@ from geomstats.geometry.hypersphere import Hypersphere
 from geomstats.geometry.grassmannian import Grassmannian
 from geomstats.learning.frechet_mean import FrechetMean
 from geomstats.geometry.euclidean import  Euclidean
+#import geomstats.datasets.utils as data_utils
 import geomstats.backend as gs
-from util import visGeodesicsTM
+from util import visGeodesicsTM, load_data
 import geomstats.visualization as visualization
 import logging
 
@@ -18,15 +19,16 @@ First Application: Discrete Geodesics on the 2-Sphere
 """
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
+dd = load_data()
 Ns = 3
-sm = SasakiMetric(S2_metric, Ns)
+sas = SasakiMetric(S2_metric, Ns)
 p0, u0 = np.array([0, -1, 0]), np.array([1, 0, 1])
 pu0 = np.array([p0, u0])
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
 puL = np.array([pL, uL])
 #m = sm.mean([pu0] + [puL])
 # print('Computing shortest path of geodesics')
-z = sm.geodesic(pu0, puL)
+z = sas.geodesic(pu0, puL)
 # vw0 = sm.log(puL, pu0)
 # xx = sm.exp(vw0, pu0)
 geo_list, color_list = [], []
@@ -49,7 +51,7 @@ visGeodesicsTM(geo_list, color_list, 15)
 """
 Second Application: Clustering via Regression
 """
-m = np.array([[0, 1, 0], [0, 0, 1]])
+m = np.array([[0, -1, 0], [0, 0, 1]])
 n_samples, sigma = 10, np.pi/12
 x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
@@ -62,7 +64,7 @@ print('Computing mean of geodesics')
 #mean_gs = FrechetMean(S2_metric)
 #mean_gs.fit(samples)
 #mean_estimate = mean_gs.estimate_
-mean = sm.mean(samples)
+mean = sas.mean(samples)
 #mp, mu = mean[0], mean[1]
 meanvalue, data, geom = [], [], []
 for i in range(Nt):
@@ -77,6 +79,9 @@ visGeodesicsTM(geo_list, color_list, 15)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
-r = KendallShapeMetric(5, 2)
-# p = PreShapeSpace(5,2)
-# s=Sasaki_metric(r)
+KenMetric = KendallShapeMetric(5, 2)
+Ken = PreShapeSpace(5, 2)
+sas = SasakiMetric(KenMetric)
+samples = load_data()
+print(f"Total number of rat skulls: {len(samples)}")
+
