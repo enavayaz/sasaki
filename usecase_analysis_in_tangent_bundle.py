@@ -5,6 +5,8 @@ from geomstats.geometry.pre_shape import PreShapeSpace, KendallShapeMetric
 from numpy.random import random
 from sasaki_metric import SasakiMetric
 from geomstats.geometry.hypersphere import Hypersphere
+from geomstats.geometry.grassmannian import Grassmannian
+from geomstats.learning.frechet_mean import FrechetMean
 from geomstats.geometry.euclidean import  Euclidean
 import geomstats.backend as gs
 from util import visGeodesicsTM
@@ -19,12 +21,12 @@ S2_metric = S2.metric
 Ns = 3
 sm = SasakiMetric(S2_metric, Ns)
 p0, u0 = np.array([0, -1, 0]), np.array([1, 0, 1])
-pu0 = [p0, u0]
+pu0 = np.array([p0, u0])
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
-puL = [pL, uL]
+puL = np.array([pL, uL])
 #m = sm.mean([pu0] + [puL])
 # print('Computing shortest path of geodesics')
-# z = sm.geodesic([p0, u0], [pL, uL])
+z = sm.geodesic(pu0, puL)
 # vw0 = sm.log(puL, pu0)
 # xx = sm.exp(vw0, pu0)
 geo_list, color_list = [], []
@@ -36,13 +38,13 @@ for i in range(Nt):
     geods0L.append(S2_metric.exp(t[i] * uL, pL))
 geo_list = [geods0L]
 color_list.append('r')
-# for j in range(1, len(z) - 1):
-#     p1, u1 = z[j][0], z[j][1]
-#     for i in range(Nt):
-#         geods.append(S2_metric.exp(t[i] * u1, p1))
-# geo_list += [geods]
-# color_list += 'b'
-# visGeodesicsTM(geo_list, color_list, 15)
+for j in range(1, len(z) - 1):
+    p1, u1 = z[j][0], z[j][1]
+    for i in range(Nt):
+        geods.append(S2_metric.exp(t[i] * u1, p1))
+geo_list += [geods]
+color_list += 'b'
+visGeodesicsTM(geo_list, color_list, 15)
 # # plot_and_save_video(geods)
 """
 Second Application: Clustering via Regression
@@ -53,9 +55,13 @@ x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 x = [S2_metric.exp(sigma*S2_metric.log(x[i], m[0]), m[0]) for i in range(n_samples)]
 u = [m[1] + sigma*S2_metric.log(y[i], m[0]) for i in range(n_samples)]
-samples = [[x[i], u[i]] for i in range(n_samples)]
+samples = [np.array([x[i], u[i]]) for i in range(n_samples)]
 print('Computing mean of geodesics')
 #mean = sm.mean(z)
+#gg=Grassmannian(5,2)
+#mean_gs = FrechetMean(S2_metric)
+#mean_gs.fit(samples)
+#mean_estimate = mean_gs.estimate_
 mean = sm.mean(samples)
 #mp, mu = mean[0], mean[1]
 meanvalue, data, geom = [], [], []

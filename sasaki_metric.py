@@ -16,8 +16,8 @@ class SasakiMetric:
     """
 
     def __init__(self, metric: RiemannianMetric = None, Ns=4):
-        self.metric = metric
-        self.Ns = Ns
+        self.metric = metric  # Riemannian metric of underlying space
+        self.Ns = Ns  # Number of discretization steps
         # super().__init__(metric, Ns)
 
     def exp(self, vw0, pu0, t=1):
@@ -40,7 +40,7 @@ class SasakiMetric:
             w = par_trans(w0, p0, None, p)
             p0, u0 = p, u
             v0, w0 = v, w
-        return [p, u]
+        return np.vstack((p, u))
 
     def log(self, puL, pu0):
         """
@@ -57,7 +57,7 @@ class SasakiMetric:
         p0, u0 = pu0[0], pu0[1]
         w = (par_trans(u1, p1, None, p0) - u0) / eps
         v = metric.log(point=p1, base_point=p0) / eps
-        return np.array([v, w])
+        return np.vstack((v,w))
 
     def geodesic(self, pu0, puL):
         """
@@ -108,32 +108,22 @@ class SasakiMetric:
         for i in range(1, Ns):
             p_ini = metric.exp(s[i] * v, p0)
             u_ini = (1 - s[i]) * par_trans(u0, p0, None, p_ini) + s[i] * par_trans(uL, pL, None, p_ini)
-            pu_ini.append([p_ini, u_ini])
-
+            pu_ini.append(np.vstack((p_ini, u_ini)))
+# Besser np.array([p_ini, u_ini])? TODO
         x = gradient_descent(pu_ini, grad, self.exp)
-        return [pu0] + x + [puL]
+        return [pu0]+x+[puL]
 
     def dist(self, pu0, puL):
         [v, w] = self.log(puL, pu0)
         return np.linalg.sqrt(np.linalg.norm(v) ** 2 + np.linalg.norm(w) ** 2)
 
     def mean(self, pu, mean_ini=None):
-        lrate, max_iter = 0.5, 100
-
-        # def grad1(x):
-        #     g = -np.sum(self.log(y, x) for y in pu) / len(pu)
-        #     return g
         def grad(x):
             g = -np.sum(self.log(y, x[0]) for y in pu) / len(pu)
             return np.array([g])
 
         if mean_ini is None:
             mean_ini = pu[0]
+
         m = gradient_descent([mean_ini], grad, self.exp, lrate=1, max_iter=100)
-        # m1 = mean_ini
-        # for _ in range(max_iter):
-        #     g = grad1(m)
-        #     g_norm = np.linalg.norm(g)
-        #     if g_norm < 1e-6: break
-        #     m = self.exp(vw0=-lrate * g, pu0=m)
         return m[0]
