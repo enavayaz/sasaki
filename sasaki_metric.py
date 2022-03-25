@@ -15,7 +15,7 @@ class SasakiMetric:
     TODO
     """
 
-    def __init__(self, metric: RiemannianMetric = None, Ns=4):
+    def __init__(self, metric: RiemannianMetric = None, Ns=3):
         self.metric = metric  # Riemannian metric of underlying space
         self.Ns = Ns  # Number of discretization steps
         # super().__init__(metric, Ns)
@@ -55,9 +55,9 @@ class SasakiMetric:
         pu = self.geodesic(pu0, puL)
         p1, u1 = pu[1][0], pu[1][1]
         p0, u0 = pu0[0], pu0[1]
-        w = (par_trans(u1, p1, None, p0) - u0) / eps
-        v = metric.log(point=p1, base_point=p0) / eps
-        return np.vstack((v,w))
+        w = (par_trans(u1, p1, None, p0) - u0)
+        v = metric.log(point=p1, base_point=p0)
+        return Ns*np.vstack((v, w))
 
     def geodesic(self, pu0, puL):
         """

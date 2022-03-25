@@ -14,9 +14,18 @@ from util import visSphere, visKen, load_data
 import geomstats.visualization as visualization
 import logging
 
+
 """
 First Application: Discrete Geodesics on the 2-Sphere
 """
+KenMetric = KendallShapeMetric(8, 2)
+Ken = PreShapeSpace(8, 2)
+sas = SasakiMetric(KenMetric)
+samples = load_data()
+print(f"Total number of rat skulls: {len(samples)}")
+samples = [Ken.projection(samples[i]) for i in range(144)]
+visKen([samples], ['r'])
+
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
 dd = load_data()
@@ -26,6 +35,9 @@ p0, u0 = np.array([0, -1, 0]), np.array([1, 0, 1])
 pu0 = np.array([p0, u0])
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
 puL = np.array([pL, uL])
+h=[np.array([p0[0:2], pL[0:2]])]
+c=['r']
+visKen(h,c)
 #m = sm.mean([pu0] + [puL])
 # print('Computing shortest path of geodesics')
 z = sas.geodesic(pu0, puL)
@@ -79,9 +91,9 @@ visSphere(geo_list, color_list, 15)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
-KenMetric = KendallShapeMetric(5, 2)
-Ken = PreShapeSpace(5, 2)
+KenMetric = KendallShapeMetric(8, 2)
+Ken = PreShapeSpace(8, 2)
 sas = SasakiMetric(KenMetric)
 samples = load_data()
 print(f"Total number of rat skulls: {len(samples)}")
-visKen
+visKen([samples], ['r'])
