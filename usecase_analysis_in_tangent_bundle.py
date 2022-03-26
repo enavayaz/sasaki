@@ -14,22 +14,18 @@ from util import visSphere, visKen, load_data
 import geomstats.visualization as visualization
 import logging
 
-
+Nt = 25
+t = np.linspace(0, 1, Nt)
 """
 First Application: Discrete Geodesics on the 2-Sphere
 """
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
-dd = load_data()
-Ns = 3
-sas = SasakiMetric(S2_metric, Ns)
+sas = SasakiMetric(S2_metric, S2.shape, 4)
 p0, u0 = np.array([0, -1, 0]), np.array([1, 0, 1])
 pu0 = np.array([p0, u0])
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
 puL = np.array([pL, uL])
-h=[np.array([p0[0:2], pL[0:2]])]
-c=['r']
-visKen(h,c)
 #m = sm.mean([pu0] + [puL])
 # print('Computing shortest path of geodesics')
 z = sas.geodesic(pu0, puL)
@@ -37,8 +33,6 @@ z = sas.geodesic(pu0, puL)
 # xx = sm.exp(vw0, pu0)
 geo_list, color_list = [], []
 geods0L, geods = [], []
-Nt = 25
-t = np.linspace(0, 1, Nt)
 for i in range(Nt):
     geods0L.append(S2_metric.exp(t[i] * u0, p0))
     geods0L.append(S2_metric.exp(t[i] * uL, pL))
@@ -85,7 +79,7 @@ Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
 KenMetric = KendallShapeMetric(8, 2)
 Ken = PreShapeSpace(8, 2)
-sas = SasakiMetric(KenMetric)
+sas = SasakiMetric(KenMetric, Ken.shape)
 samples = load_data()
 print(f"Total number of rat skulls: {len(samples)}")
 samples = [Ken.projection(samples[i]) for i in range(144)]

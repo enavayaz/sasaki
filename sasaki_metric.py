@@ -15,10 +15,15 @@ class SasakiMetric:
     TODO
     """
 
-    def __init__(self, metric: RiemannianMetric = None, Ns=3):
+    def __init__(self, metric: RiemannianMetric = None, point_shape=(3,), Ns=3):
         self.metric = metric  # Riemannian metric of underlying space
         self.Ns = Ns  # Number of discretization steps
+        self.point_shape = point_shape
+        self.default_point_type = 'matrix'
         # super().__init__(metric, Ns)
+
+    def zerovector(self):
+        return np.zeros(self.point_shape)
 
     def exp(self, vw0, pu0, t=1):
         """
@@ -86,7 +91,7 @@ class SasakiMetric:
             return .5 * h
 
         def grad(pu):
-            gp = metric.log(p0, p0)  # initial gradient with zero vectors
+            gp = self.zerovector()  # initial gradient with zero vectors
             gu = gp
             g = np.array([np.vstack((gp, gu))] * (Ns - 1))
             pu = [pu0] + pu + [puL]  # add boundary points to the list of points
