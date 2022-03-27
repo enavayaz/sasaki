@@ -1,5 +1,5 @@
 import functools
-import numpy as np
+import numpy as gs
 from scipy.integrate import solve_ivp
 from scipy.integrate import cumtrapz
 import util
@@ -23,11 +23,11 @@ class SasakiMetric:
         # super().__init__(metric, Ns)
 
     def zerovector(self):
-        return np.zeros(self.point_shape)
+        return gs.zeros(self.point_shape)
 
     def exp(self, vw0, pu0, t=1):
         """
-        Input: initial point pu= [p0,u0] in TM and initial
+        Igsut: initial point pu= [p0,u0] in TM and initial
         velocity vw0=[v0,w0] tangent vectors at p0, where v0 horizontal and w0 vertical component
         Output: end point puL=[pL, uL] with pL footpoint and uL tangent vector
         """
@@ -45,11 +45,11 @@ class SasakiMetric:
             w = par_trans(w0, p0, None, p)
             p0, u0 = p, u
             v0, w0 = v, w
-        return np.vstack((p, u))
+        return gs.vstack((p, u))
 
     def log(self, puL, pu0):
         """
-        Input: pu0 and puL (with fields p and u) points in TM
+        Igsut: pu0 and puL (with fields p and u) points in TM
         Output: structure vw with fields v and w; (v,w) is the initial vector of
         tangent bundle geodesic from (p0,u0) to (pL,uL)
         """
@@ -62,11 +62,11 @@ class SasakiMetric:
         p0, u0 = pu0[0], pu0[1]
         w = (par_trans(u1, p1, None, p0) - u0)
         v = metric.log(point=p1, base_point=p0)
-        return Ns*np.vstack((v, w))
+        return Ns*gs.vstack((v, w))
 
     def geodesic(self, pu0, puL):
         """
-        Input: Points puo=(p0, u0) and puL=(pL, uL) of tangent bundle
+        Igsut: Points puo=(p0, u0) and puL=(pL, uL) of tangent bundle
         Ns - 1 is the number of intermidate points in the discretization
         of the geodesic from pu0 to puL
         Output: Discrete geodesic x(s)=(p(s), u(s)) in Sasaki metric
@@ -82,19 +82,19 @@ class SasakiMetric:
         def loss(pu):
             # h is the loss function
             pu = [pu0] + pu + [puL]
-            # h = metric.dist(p[0], p[1])**2 + (np.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
+            # h = metric.dist(p[0], p[1])**2 + (gs.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
             h = 0
             for j in range(Ns):
                 p1, u1, p2, u2 = pu[j][0], pu[j][1], pu[j + 1][0], pu[j + 1][1]
                 v1, w1 = metric.log(p2, p1), par_trans(u2, p2, None, p1) - u1
-                h += np.linalg.norm(v1) ** 2 + np.linalg.norm(w1) ** 2
+                h += gs.linalg.norm(v1) ** 2 + gs.linalg.norm(w1) ** 2
             return .5 * h
 
         def grad(pu):
             g = self.zerovector()  # initial gradient with zero vectors
             #gp = g[0]
             #gu = g[1]
-            g = np.array([g] * (Ns - 1))
+            g = gs.array([g] * (Ns - 1))
             pu = [pu0] + pu + [puL]  # add boundary points to the list of points
             for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
@@ -109,32 +109,32 @@ class SasakiMetric:
 
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
-        s = np.linspace(0, 1, Ns + 1)
+        s = gs.linspace(0, 1, Ns + 1)
         pu_ini = []
         for i in range(1, Ns):
             p_ini = metric.exp(s[i] * v, p0)
             u_ini = (1 - s[i]) * par_trans(u0, p0, None, p_ini) + s[i] * par_trans(uL, pL, None, p_ini)
-            pu_ini.append(np.vstack((p_ini, u_ini)))
-# Besser np.array([p_ini, u_ini])? TODO
+            pu_ini.append(gs.vstack((p_ini, u_ini)))
+# Besser gs.array([p_ini, u_ini])? TODO
         x = gradient_descent(pu_ini, grad, self.exp)
         return [pu0]+x+[puL]
 
     def dist(self, pu0, puL):
         [v, w] = self.log(puL, pu0)
-        return np.linalg.sqrt(np.linalg.norm(v) ** 2 + np.linalg.norm(w) ** 2)
+        return gs.linalg.sqrt(gs.linalg.norm(v) ** 2 + gs.linalg.norm(w) ** 2)
 
     def mean(self, pu, mean_ini=None):
         def grad(x):
-            g = -np.sum(self.log(y, x[0]) for y in pu) / len(pu)
-            return np.array([g])
+            g = -gs.sum(self.log(y, x[0]) for y in pu) / len(pu)
+            return gs.array([g])
 
         if mean_ini is None:
             mean_ini = pu[0]
-            a = np.array(pu)
+            a = gs.array(pu)
             mean_p = FrechetMean(self.metric)
             mean_p.fit(a[:, 0])
             mean_ini[0] = mean_p.estimate_
-            a[:, 1] = np.array([self.metric.parallel_transport(a[j, 1], a[j, 0], end_point=mean_ini[0]) for j in range(len(pu))])
-            mean_ini[1] = np.mean(a[:, 1], 0)
+            a[:, 1] = gs.array([self.metric.parallel_transport(a[j, 1], a[j, 0], end_point=mean_ini[0]) for j in range(len(pu))])
+            mean_ini[1] = gs.mean(a[:, 1], 0)
         m = gradient_descent([mean_ini], grad, self.exp, lrate=1, max_iter=100)
         return m[0]
