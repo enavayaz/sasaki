@@ -85,11 +85,16 @@ samples = load_data()
 print(f"Total number of rat skulls: {len(samples)}")
 samples = [Ken.projection(samples[i]) for i in range(144)]
 visKen([samples], ['r'])
+samples = gs.array(samples)
 # Regression
 reg = GeodesicRegression(Ken, KenMetric)
 # TODO
-reg.fit(samples, y, compute_training_score=True)
-intercept, beta = reg.intercept_, reg.coef_
+x = gs.linspace(0, 1, 8)
+for i in range(18):
+    #Change backend to tensorflow, autodiff or pytorch and samples to array
+    reg.fit(x, samples[i*8:i*8+8], compute_training_score=True)
+    intercept, beta = reg.intercept_, reg.coef_
+
 # TPCA
 #mean_gs = FrechetMean(sas)
 #mean_gs.fit(samples)

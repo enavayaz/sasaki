@@ -98,4 +98,4 @@ def load_data():
     #         a[j][1]=d[i][j+8]
     #     dz.append(a)
     # gs.save('rat_skulls.gsy', dz)
-    return gs.load('rat_skulls.gsy')
+    return np.load('rat_skulls.npy')
