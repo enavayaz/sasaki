@@ -15,10 +15,10 @@ class SasakiMetric:
     TODO
     """
 
-    def __init__(self, metric: RiemannianMetric = None, point_shape=(3,), Ns=3):
+    def __init__(self, metric: RiemannianMetric = None, base_shape=(3, ), Ns=3):
         self.metric = metric  # Riemannian metric of underlying space
         self.Ns = Ns  # Number of discretization steps
-        self.point_shape = point_shape
+        self.point_shape = (2, *base_shape)
         self.default_point_type = 'matrix'
         # super().__init__(metric, Ns)
 
@@ -91,9 +91,10 @@ class SasakiMetric:
             return .5 * h
 
         def grad(pu):
-            gp = self.zerovector()  # initial gradient with zero vectors
-            gu = gp
-            g = np.array([np.vstack((gp, gu))] * (Ns - 1))
+            g = self.zerovector()  # initial gradient with zero vectors
+            #gp = g[0]
+            #gu = g[1]
+            g = np.array([g] * (Ns - 1))
             pu = [pu0] + pu + [puL]  # add boundary points to the list of points
             for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
@@ -129,6 +130,11 @@ class SasakiMetric:
 
         if mean_ini is None:
             mean_ini = pu[0]
-
+            a = np.array(pu)
+            mean_p = FrechetMean(self.metric)
+            mean_p.fit(a[:, 0])
+            mean_ini[0] = mean_p.estimate_
+            a[:, 1] = np.array([self.metric.parallel_transport(a[j, 1], a[j, 0], end_point=mean_ini[0]) for j in range(len(pu))])
+            mean_ini[1] = np.mean(a[:, 1], 0)
         m = gradient_descent([mean_ini], grad, self.exp, lrate=1, max_iter=100)
         return m[0]

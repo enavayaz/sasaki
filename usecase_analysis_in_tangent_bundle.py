@@ -21,7 +21,7 @@ First Application: Discrete Geodesics on the 2-Sphere
 """
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
-sas = SasakiMetric(S2_metric, S2.shape, 4)
+sas = SasakiMetric(S2_metric, S2.shape)
 p0, u0 = np.array([0, -1, 0]), np.array([1, 0, 1])
 pu0 = np.array([p0, u0])
 pL, uL = np.array([1, 0, 0]), np.array([0, 1, 1])
