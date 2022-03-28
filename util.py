@@ -1,13 +1,25 @@
 import matplotlib
 import matplotlib.pylab as plt
 import matplotlib.animation as animation
-import geomstats.visualization as visualization
-from geomstats.geometry.riemannian_metric import RiemannianMetric
 import geomstats.backend as gs
+import geomstats.visualization as visualization
+from geomstats.learning.frechet_mean import FrechetMean
+from geomstats.geometry.riemannian_metric import RiemannianMetric
 import logging
 import numpy as np
 import csv
 # matplotlib.use("Agg")  # NOQA
+
+def initial_mean(pu, metric):
+    mean_ini = pu[0]
+    a = gs.array(pu)
+    mean_p = FrechetMean(metric)
+    mean_p.fit(a[:, 0])
+    mean_ini[0] = mean_p.estimate_
+    a[:, 1] = gs.array(
+        [metric.parallel_transport(a[j, 1], a[j, 0], end_point=mean_ini[0]) for j in range(len(pu))])
+    mean_ini[1] = gs.mean(a[:, 1], 0)
+    return mean_ini
 
 def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=100, tol=1e-6):
     """

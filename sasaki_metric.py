@@ -1,87 +1,96 @@
-import functools
-import numpy as gs
-from scipy.integrate import solve_ivp
-from scipy.integrate import cumtrapz
-import util
+import geomstats.backend as gs
 from geomstats.geometry.riemannian_metric import RiemannianMetric
-from geomstats.geometry.manifold import Manifold
-from geomstats.learning import geodesic_regression
-from geomstats.learning.frechet_mean import FrechetMean
+
+import util
 gradient_descent = util.gradient_descent
 
-
-class SasakiMetric:
+class SasakiMetric(RiemannianMetric):
     """
     TODO
     """
 
-    def __init__(self, metric: RiemannianMetric = None, base_shape=(3, ), Ns=3):
+    def __init__(self, metric: RiemannianMetric = None, Ns=3):
         self.metric = metric  # Riemannian metric of underlying space
         self.Ns = Ns  # Number of discretization steps
-        self.point_shape = (2, *base_shape)
-        self.default_point_type = 'matrix'
-        # super().__init__(metric, Ns)
+        shape = (2, *metric.shape)
+
+        super(SasakiMetric, self).__init__(2*metric.dim, shape = shape, default_point_type = 'matrix')
 
     def zerovector(self):
-        return gs.zeros(self.point_shape)
+        return gs.zeros(self.shape)
 
-    def exp(self, vw0, pu0, t=1):
+    def exp(self, tangent_vec, base_point, n_steps=None, **kwargs):
         """
         Igsut: initial point pu= [p0,u0] in TM and initial
-        velocity vw0=[v0,w0] tangent vectors at p0, where v0 horizontal and w0 vertical component
-        Output: end point puL=[pL, uL] with pL footpoint and uL tangent vector
+        velocity tangent_vec=[v0,w0] tangent vectors at base_point, where v0 horizontal and w0 vertical component
+        Output: end point point=[pL, uL] with pL footpoint and uL tangent vector
         """
+        bs_pts = [base_point] if base_point.shape == self.shape else base_point
+        tngs = [tangent_vec] if tangent_vec.shape == self.shape else tangent_vec
+
         metric = self.metric
         par_trans = metric.parallel_transport
-        Ns = self.Ns
+        Ns = self.Ns if n_steps is None else n_steps
         eps = 1 / Ns
-        v0, w0 = t * vw0[0], t * vw0[1]
-        p0, u0 = pu0[0], pu0[1]
-        p, u = p0, u0
-        for j in range(Ns - 1):
-            p = metric.exp(eps * v0, p0)
-            u = par_trans(u0 + eps * w0, p0, None, p)
-            v = par_trans(v0 - eps * (metric.curvature(u0, w0, v0, p0)), p0, None, p)
-            w = par_trans(w0, p0, None, p)
-            p0, u0 = p, u
-            v0, w0 = v, w
-        return gs.vstack((p, u))
 
-    def log(self, puL, pu0):
+        rslt = []
+        for bs_pt, tng in zip(bs_pts, tngs):
+            v0, w0 = tng[0], tng[1]
+            p0, u0 = bs_pt[0], bs_pt[1]
+            p, u = p0, u0
+            for j in range(Ns - 1):
+                p = metric.exp(eps * v0, p0)
+                u = par_trans(u0 + eps * w0, p0, None, p)
+                v = par_trans(v0 - eps * (metric.curvature(u0, w0, v0, p0)), p0, None, p)
+                w = par_trans(w0, p0, None, p)
+                p0, u0 = p, u
+                v0, w0 = v, w
+            rslt.append(gs.vstack((p, u)))
+
+        return gs.array(rslt) if len(rslt) > 1 else rslt[0]
+
+    def log(self, point, base_point, n_steps=None, **kwargs):
         """
-        Igsut: pu0 and puL (with fields p and u) points in TM
+        Igsut: base_point and point (with fields p and u) points in TM
         Output: structure vw with fields v and w; (v,w) is the initial vector of
         tangent bundle geodesic from (p0,u0) to (pL,uL)
         """
-        metric = self.metric
-        par_trans = metric.parallel_transport
-        Ns = self.Ns
-        eps = 1 / Ns
-        pu = self.geodesic(pu0, puL)
-        p1, u1 = pu[1][0], pu[1][1]
-        p0, u0 = pu0[0], pu0[1]
-        w = (par_trans(u1, p1, None, p0) - u0)
-        v = metric.log(point=p1, base_point=p0)
-        return Ns*gs.vstack((v, w))
+        pts = [point] if point.shape == self.shape else point
+        bs_pts = [base_point] * len(pts) if base_point.shape == self.shape else base_point
 
-    def geodesic(self, pu0, puL):
-        """
-        Igsut: Points puo=(p0, u0) and puL=(pL, uL) of tangent bundle
-        Ns - 1 is the number of intermidate points in the discretization
-        of the geodesic from pu0 to puL
-        Output: Discrete geodesic x(s)=(p(s), u(s)) in Sasaki metric
-        In particular log(pu0, puL) is the tangent vector  from pu0 to puL
-        """
-        Ns = self.Ns
         metric = self.metric
         par_trans = metric.parallel_transport
-        p0, u0 = pu0[0], pu0[1]
-        pL, uL = puL[0], puL[1]
+        Ns = self.Ns if n_steps is None else n_steps
+
+        rslt = []
+        for pt, bs_pt in zip(pts, bs_pts):
+            pu = self.geodesic_discrete(bs_pt, pt, Ns)
+            p1, u1 = pu[1][0], pu[1][1]
+            p0, u0 = bs_pt[0], bs_pt[1]
+            w = (par_trans(u1, p1, None, p0) - u0)
+            v = metric.log(point=p1, base_point=p0)
+            rslt.append(Ns * gs.vstack((v, w)))
+
+        return gs.array(rslt) if len(rslt) > 1 else rslt[0]
+
+    def geodesic_discrete(self, initial_point, end_point, n_steps=None, **kwargs):
+        """
+        Igsut: Points puo=(p0, u0) and point=(pL, uL) of tangent bundle
+        Ns - 1 is the number of intermidate points in the discretization
+        of the geodesic from base_point to point
+        Output: Discrete geodesic x(s)=(p(s), u(s)) in Sasaki metric
+        In particular log(base_point, point) is the tangent vector  from base_point to point
+        """
+        Ns = self.Ns if n_steps is None else n_steps
+        metric = self.metric
+        par_trans = metric.parallel_transport
+        p0, u0 = initial_point[0], initial_point[1]
+        pL, uL = end_point[0], end_point[1]
         eps = 1 / Ns
 
         def loss(pu):
             # h is the loss function
-            pu = [pu0] + pu + [puL]
+            pu = [initial_point] + pu + [end_point]
             # h = metric.dist(p[0], p[1])**2 + (gs.linalg.norm(par_trans(u[1] - u[0], p[0], None, p[1])))**2
             h = 0
             for j in range(Ns):
@@ -95,7 +104,7 @@ class SasakiMetric:
             #gp = g[0]
             #gu = g[1]
             g = gs.array([g] * (Ns - 1))
-            pu = [pu0] + pu + [puL]  # add boundary points to the list of points
+            pu = [initial_point] + pu + [end_point]  # add boundary points to the list of points
             for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
                 p2, u2 = pu[j + 1][0], pu[j + 1][1]
@@ -115,26 +124,28 @@ class SasakiMetric:
             p_ini = metric.exp(s[i] * v, p0)
             u_ini = (1 - s[i]) * par_trans(u0, p0, None, p_ini) + s[i] * par_trans(uL, pL, None, p_ini)
             pu_ini.append(gs.vstack((p_ini, u_ini)))
-# Besser gs.array([p_ini, u_ini])? TODO
         x = gradient_descent(pu_ini, grad, self.exp)
-        return [pu0]+x+[puL]
+        return [initial_point] + x + [end_point]
 
-    def dist(self, pu0, puL):
-        [v, w] = self.log(puL, pu0)
-        return gs.linalg.sqrt(gs.linalg.norm(v) ** 2 + gs.linalg.norm(w) ** 2)
+    def squared_dist(self, point_a, point_b, **kwargs):
+        sqnorm = self.metric.squared_norm
+        logs = self.log(point_a, point_b, **kwargs)
+        b = point_b[0] if point_b.shape == self.shape else point_b[:, 0]
+        v = logs[0] if logs.shape == self.shape else logs[:, 0]
+        w = logs[1] if logs.shape == self.shape else logs[:, 1]
+        return sqnorm(v, b) + sqnorm(w, b)
 
-    def mean(self, pu, mean_ini=None):
-        def grad(x):
-            g = -gs.sum(self.log(y, x[0]) for y in pu) / len(pu)
-            return gs.array([g])
+    def dist(self, point_a, point_b, **kwargs):
+        return gs.linalg.sqrt(self.squared_dist(point_a, point_b, **kwargs))
 
-        if mean_ini is None:
-            mean_ini = pu[0]
-            a = gs.array(pu)
-            mean_p = FrechetMean(self.metric)
-            mean_p.fit(a[:, 0])
-            mean_ini[0] = mean_p.estimate_
-            a[:, 1] = gs.array([self.metric.parallel_transport(a[j, 1], a[j, 0], end_point=mean_ini[0]) for j in range(len(pu))])
-            mean_ini[1] = gs.mean(a[:, 1], 0)
-        m = gradient_descent([mean_ini], grad, self.exp, lrate=1, max_iter=100)
-        return m[0]
+    def squared_norm(self, vector, base_point=None):
+        assert base_point is not None
+        sqnorm = self.metric.squared_norm
+        p = base_point[0] if base_point.shape == self.shape else base_point[:, 0]
+        v = vector[0] if vector.shape == self.shape else vector[:, 0]
+        w = vector[1] if vector.shape == self.shape else vector[:, 1]
+        return sqnorm(v, p) + sqnorm(w, p)
+
+    def norm(self, vector, base_point=None):
+        assert base_point is not None
+        return gs.linalg.sqrt(self.squared_norm(vector, base_point))

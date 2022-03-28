@@ -12,7 +12,7 @@ from geomstats.learning.geodesic_regression import GeodesicRegression
 from geomstats.geometry.euclidean import  Euclidean
 #import geomstats.datasets.utils as data_utils
 import geomstats.backend as gs
-from util import visSphere, visKen, load_data
+from util import visSphere, visKen, load_data, initial_mean
 import geomstats.visualization as visualization
 import logging
 import matplotlib.pylab as plt
@@ -24,14 +24,17 @@ First Application: Discrete Geodesics on the 2-Sphere
 """
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
-sas = SasakiMetric(S2.metric, S2.shape)
+# bypass geomstats bug: shape property of HypersphereMetric not initialized consistently
+if S2.default_coords_type == 'extrinsic':
+    S2_metric.shape = (S2.dim+1,)
+sas = SasakiMetric(S2.metric)
 p0, u0 = gs.array([0, -1, 0]), gs.array([1, 0, 1])
 pu0 = gs.array([p0, u0])
 pL, uL = gs.array([1, 0, 0]), gs.array([0, 1, 1])
 puL = gs.array([pL, uL])
 #m = sm.mean([pu0] + [puL])
 # print('Computing shortest path of geodesics')
-z = sas.geodesic(pu0, puL)
+z = sas.geodesic_discrete(pu0, puL)
 # vw0 = sm.log(puL, pu0)
 # xx = sm.exp(vw0, pu0)
 geo_list, color_list = [], []
@@ -59,12 +62,14 @@ y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 x = [S2_metric.exp(sigma*S2_metric.log(x[i], m[0]), m[0]) for i in range(n_samples)]
 u = [m[1] + sigma*S2_metric.log(y[i], m[0]) for i in range(n_samples)]
 samples = [gs.array([x[i], u[i]]) for i in range(n_samples)]
+
 print('Computing mean of geodesics')
-#mean_gs = FrechetMean(sas)
-#mean_gs.fit(samples)
-#mean_estimate = mean_gs.estimate_
-mean = sas.mean(samples)
-#mp, mu = mean[0], mean[1]
+initial = initial_mean(samples, S2_metric)
+mean_gs = FrechetMean(sas, init_point=initial)
+mean_gs.fit(samples)
+mean = mean_gs.estimate_
+# mean = sas.mean(samples)
+
 meanvalue, data, geom = [], [], []
 for i in range(Nt):
     ti = t[i]
@@ -80,7 +85,7 @@ Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
 KenMetric = KendallShapeMetric(8, 2)
 Ken = PreShapeSpace(8, 2)
-sas = SasakiMetric(KenMetric, Ken.shape)
+sas = SasakiMetric(KenMetric)
 samples = load_data()
 print(f"Total number of rat skulls: {len(samples)}")
 samples = [Ken.projection(samples[i]) for i in range(144)]
