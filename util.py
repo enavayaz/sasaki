@@ -43,38 +43,6 @@ def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=100, tol=1
             x[j] = exp(grad_x[j], x[j])
     return list(x)
 
-def vis(coords):
-    plt.plot(coords[0, :], coords[1, :])
-    plt.axis('equal')
-    plt.xlabel('x')
-    plt.xlabel('y')
-    plt.show()
-
-def vis3D(coords):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    plt.plot(coords[0, :], coords[1, :], coords[2, :])
-    # plt.axis('equal');#plt.xlabel('x');plt.ylabel('y');plt.zlabel('z')
-    plt.show()
-
-def plot_and_save_video(
-        geodesics, loss=None, size=20, fps=10, dpi=100, out="out.mp4", color="red"):
-    """Render a set of geodesics and save it to an mpeg 4 file."""
-    FFMpegWriter = animation.writers["ffmpeg"]
-    writer = FFMpegWriter(fps=fps)
-    fig = plt.figure(figsize=(size, size))
-    ax = fig.add_subplot(111, projection="3d")
-    sphere = visualization.Sphere()
-    # sphere.plot_heatmap(ax, loss)
-    points = gs.to_ndarray(geodesics[0], to_ndim=2)
-    sphere.add_points(points)
-    sphere.draw(ax, color=color, marker=".")
-    with writer.saving(fig, out, dpi=dpi):
-        for points in geodesics[1:]:
-            points = gs.to_ndarray(points, to_ndim=2)
-            sphere.draw_points(ax, points=points, color=color, marker=".")
-            writer.grab_frame()
-
 def visSphere(points_list, color_list, size=15):
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111, projection="3d")
@@ -91,13 +59,32 @@ def visKen(points_list, color_list, size=10):
     ax = fig.add_subplot(111)
     for i in range(len(points_list)):
         for points in points_list:
-            #points = gs.to_ndarray(points, to_ndim=2)
-            for j in range(len(points)):
-                ax.scatter(points[j][:, 0], points[j][:, 1], color=color_list[i], alpha=0.5)
-#    ax.plot(points[:, 0], points[:, 1], linestyle="dashed")
-#    ax.scatter(gs.to_numpy(linear_mean[0]), gs.to_numpy(linear_mean[1]), label="Mean", s=80, alpha=0.5,)
+            points = gs.to_ndarray(points, to_ndim=2)
+            for point in points:
+                ax.scatter(point[:, 0], point[:, 1], color=color_list[i], alpha=0.5)
     #ax.set_title("")
     #x.legend()
+    plt.show()
+
+def visKenPCA(geos, variance, samples, mean):
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111)
+    xticks = gs.arange(1, 2 + 1, 1)
+    ax.xaxis.set_ticks(xticks)
+    ax.set_title("Explained variance")
+    ax.set_xlabel("Number of Principal Components")
+    ax.set_ylim((0, 1))
+    ax.bar(xticks, variance)
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection="3d")
+    # TODO: plane statt S2
+    for geo in geos:
+        ax = visualization.plot(geo, ax, space="S2", linewidth=2, label="First component")
+        ax = visualization.plot(geo, ax, space="S2", linewidth=2, label="Second component")
+    ax = visualization.plot(samples, ax, space="S2", color="black", alpha=0.2, label="Data points")
+    ax = visualization.plot(mean, ax, space="S2", color="red", s=200, label="Fréchet mean")
+    ax.legend()
+    ax.set_box_aspect([1, 1, 1])
     plt.show()
 
 def load_data():
