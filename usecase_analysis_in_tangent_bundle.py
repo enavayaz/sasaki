@@ -83,21 +83,23 @@ t = gs.linspace(0, 1, Nt)
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """
-Ken = PreShapeSpace(8, 2)
-KenMetric = KendallShapeMetric(8, 2)
+samples = load_data()
+n_samples = len(samples)
+print(f"Total number of rat skulls: {n_samples}")
+n_subjects, n_trj, k_landmarks, dim = 18, 8, 8, 2
+Ken = PreShapeSpace(k_landmarks, dim)
+KenMetric = KendallShapeMetric(k_landmarks, dim)
 KenMetric.shape = Ken.shape # fix: shape not set consistently
 sas = SasakiMetric(KenMetric)
-samples = load_data()
-print(f"Total number of rat skulls: {len(samples)}")
-samples = [Ken.projection(samples[i]) for i in range(144)]
-sampels = gs.array(samples).reshape(18, 8, 8, 2)
+samples = [Ken.projection(samples[i]) for i in range(n_samples)]
+sampels = gs.array(samples).reshape(n_subjects, n_trj, k_landmarks, dim)
 visKen([samples], ['r'])
 # Regression
 # ln 266 in pre_shape.py -> add full_matrices=False to svd call (otherwise no autodiff)
 reg = GeodesicRegression(Ken, KenMetric, method="riemannian", initialization="warm_start")
 # TODO
 geos = []
-x = gs.linspace(0, 1, 8)
+x = gs.linspace(0, 1, n_trj)
 for trj in sampels:
     #Change backend to tensorflow, autodiff or pytorch and samples to array
     reg.intercept_ = trj[0]
@@ -134,7 +136,7 @@ ax = fig.add_subplot(111, projection="3d")
 #TODO: plane statt S2
 ax = visualization.plot(geodesic_points_0, ax, space="S2", linewidth=2, label="First component")
 ax = visualization.plot(geodesic_points_1, ax, space="S2", linewidth=2, label="Second component")
-ax = visualization.plot(data, ax, space="S2", color="black", alpha=0.2, label="Data points")
+ax = visualization.plot(samples, ax, space="S2", color="black", alpha=0.2, label="Data points")
 ax = visualization.plot(mean, ax, space="S2", color="red", s=200, label="Fréchet mean")
 ax.legend()
 ax.set_box_aspect([1, 1, 1])

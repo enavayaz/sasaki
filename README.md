@@ -1,17 +1,22 @@
-# Elas_Sas
+# Geodesic Analysis via Sasaki Metric
 
 
 
-## Getting started
+## Riemannian metric on the tangent bundle
+    A prominent natural metric on the tangent bundle TM of a Riemannian manifold M is the Sasaki metric.
+    Its characterization: Canonical projection of TM becomes a Riemannian submersion, parallel vector fields
+    along curves are orthogonal to their fibres, and restriction to any tangent space is Euclidean.
+## Longitudinal analysis and mean geodesic
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Literatur
+    For Details and computational aspects, see:
+-  [A Hierarchical Geodesic Model for Longitudinal Analysis on Manifolds](https://doi.org/10.1007/s10851-022-01079-x)
+-  [Sasaki Metrics for Analysis of Longitudinal Data on Manifolds](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4270017)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
 ## Add your files
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+- [ ] [A Hierarchical Geodesic Model for Longitudinal Analysis on Manifolds](https://doi.org/10.1007/s10851-022-01079-x) and [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
 
 ```
 cd existing_repo

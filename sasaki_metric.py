@@ -6,7 +6,11 @@ gradient_descent = util.gradient_descent
 
 class SasakiMetric(RiemannianMetric):
     """
-    TODO
+    A prominent natural metric on the tangent bundle TM of a Riemannian manifold M is the Sasaki metric.
+    Its characterization: Canonical projection of TM becomes a Riemannian submersion, parallel vector fields
+    along curves are orthogonal to their fibres, and restriction to any tangent space is Euclidean.
+    For Details and computational aspects, see
+    https://doi.org/10.1007/s10851-022-01079-x and https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4270017/
     """
 
     def __init__(self, metric: RiemannianMetric = None, Ns=3):
@@ -14,14 +18,14 @@ class SasakiMetric(RiemannianMetric):
         self.Ns = Ns  # Number of discretization steps
         shape = (2, *metric.shape)
 
-        super(SasakiMetric, self).__init__(2*metric.dim, shape = shape, default_point_type = 'matrix')
+        super(SasakiMetric, self).__init__(2*metric.dim, shape=shape, default_point_type = 'matrix')
 
     def zerovector(self):
         return gs.zeros(self.shape)
 
     def exp(self, tangent_vec, base_point, n_steps=None, **kwargs):
         """
-        Igsut: initial point pu= [p0,u0] in TM and initial
+        Input: initial point pu= [p0,u0] in TM and initial
         velocity tangent_vec=[v0,w0] tangent vectors at base_point, where v0 horizontal and w0 vertical component
         Output: end point point=[pL, uL] with pL footpoint and uL tangent vector
         """
@@ -51,7 +55,7 @@ class SasakiMetric(RiemannianMetric):
 
     def log(self, point, base_point, n_steps=None, **kwargs):
         """
-        Igsut: base_point and point (with fields p and u) points in TM
+        Input: base_point and point (with fields p and u) points in TM
         Output: structure vw with fields v and w; (v,w) is the initial vector of
         tangent bundle geodesic from (p0,u0) to (pL,uL)
         """
@@ -75,7 +79,8 @@ class SasakiMetric(RiemannianMetric):
 
     def geodesic_discrete(self, initial_point, end_point, n_steps=None, **kwargs):
         """
-        Igsut: Points puo=(p0, u0) and point=(pL, uL) of tangent bundle
+        This method employs a variational time discretization of geodesics.
+        Input: Points puo=(p0, u0) and point=(pL, uL) of tangent bundle
         Ns - 1 is the number of intermidate points in the discretization
         of the geodesic from base_point to point
         Output: Discrete geodesic x(s)=(p(s), u(s)) in Sasaki metric
