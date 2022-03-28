@@ -1,21 +1,11 @@
-#import numpy as gs
-from geomstats.geometry.manifold import Manifold
-from geomstats.geometry.riemannian_metric import RiemannianMetric
 from geomstats.geometry.pre_shape import PreShapeSpace, KendallShapeMetric
-from numpy.random import random
 from sasaki_metric import SasakiMetric
 from geomstats.geometry.hypersphere import Hypersphere
-from geomstats.geometry.grassmannian import Grassmannian
 from geomstats.learning.frechet_mean import FrechetMean
 from geomstats.learning.pca import TangentPCA
 from geomstats.learning.geodesic_regression import GeodesicRegression
-from geomstats.geometry.euclidean import  Euclidean
-#import geomstats.datasets.utils as data_utils
 import geomstats.backend as gs
 from util import visSphere, visKen, visKenPCA, load_data, initial_mean
-import geomstats.visualization as visualization
-import logging
-import matplotlib.pylab as plt
 
 Nt = 25
 t = gs.linspace(0, 1, Nt)
@@ -44,7 +34,6 @@ for j in range(1, len(z) - 1):
     geods.append(S2_metric.geodesic(p1, initial_tangent_vec=u1)(t))
 geo_list += [geods]
 visSphere(geo_list, ['r']+['b'], 15)
-# # plot_and_save_video(geods)
 """
 Second Application: Clustering via Regression
 """
@@ -98,7 +87,7 @@ for trj in samples:
     geos.append(gs.array([p, u]))
     geodesic = KenMetric.geodesic(initial_point=p, initial_tangent_vec=u)(t)
     geodesics.append(geodesic(t))
-
+# Tangent PCA
 mean_gs = FrechetMean(sas)
 mean_gs.fit(geos)
 mean = mean_gs.estimate_
@@ -111,4 +100,4 @@ tangent_projected_data = tpca.transform(geos)
 geo_0 = KenMetric.geodesic(initial_point=mean, initial_tangent_vec=tpca.components_[0])(t)
 geo_1 = KenMetric.geodesic(initial_point=mean, initial_tangent_vec=tpca.components_[1])(t)
 visKenPCA([geo_0]+[geo_1], tpca.explained_variance_ratio_, samples, mean)
-# Learnin
+# Learning
