@@ -92,6 +92,7 @@ samples = [Ken.projection(samples[i]) for i in range(144)]
 visKen([samples], ['r'])
 samples = gs.array(samples)
 # Regression
+# ln 266 in pre_shape.py -> add full_matrices=False to svd call (otherwise no autodiff)
 reg = GeodesicRegression(Ken, KenMetric)
 # TODO
 x = gs.linspace(0, 1, 8)
