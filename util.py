@@ -101,13 +101,4 @@ def visKen(points_list, color_list, size=10):
     plt.show()
 
 def load_data():
-    # d = gs.loadtxt('rat_skulls.csv', delimiter=',', skiprows=0)
-    # dz=[]
-    # for i in range(144):
-    #     a = gs.zeros((8, 2))
-    #     for j in range(8):
-    #         a[j][0]=d[i][j]
-    #         a[j][1]=d[i][j+8]
-    #     dz.append(a)
-    # gs.save('rat_skulls.gsy', dz)
     return np.load('rat_skulls.npy')

@@ -45,7 +45,7 @@ class SasakiMetric(RiemannianMetric):
                 w = par_trans(w0, p0, None, p)
                 p0, u0 = p, u
                 v0, w0 = v, w
-            rslt.append(gs.vstack((p, u)))
+            rslt.append(gs.array([p, u]))
 
         return gs.array(rslt) if len(rslt) > 1 else rslt[0]
 
@@ -69,7 +69,7 @@ class SasakiMetric(RiemannianMetric):
             p0, u0 = bs_pt[0], bs_pt[1]
             w = (par_trans(u1, p1, None, p0) - u0)
             v = metric.log(point=p1, base_point=p0)
-            rslt.append(Ns * gs.vstack((v, w)))
+            rslt.append(Ns * gs.array([v, w]))
 
         return gs.array(rslt) if len(rslt) > 1 else rslt[0]
 
@@ -123,7 +123,7 @@ class SasakiMetric(RiemannianMetric):
         for i in range(1, Ns):
             p_ini = metric.exp(s[i] * v, p0)
             u_ini = (1 - s[i]) * par_trans(u0, p0, None, p_ini) + s[i] * par_trans(uL, pL, None, p_ini)
-            pu_ini.append(gs.vstack((p_ini, u_ini)))
+            pu_ini.append(gs.array([p_ini, u_ini]))
         x = gradient_descent(pu_ini, grad, self.exp)
         return [initial_point] + x + [end_point]
 
