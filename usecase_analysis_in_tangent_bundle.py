@@ -38,6 +38,7 @@ visSphere(geo_list, ['r']+['b'], 15)
 Second Application: Clustering via Regression
 """
 m = gs.array([[0, -1.0, 0], [0, 0, 1.0]])
+
 n_samples, sigma = 10, gs.pi/12
 x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
@@ -51,12 +52,15 @@ mean_gs = FrechetMean(sas, init_point=initial)
 mean_gs.fit(samples)
 mean = mean_gs.estimate_
 # mean = sas.mean(samples)
+
 data, meanvalue, geom = [], [], []
 meanvalue.append(S2_metric.geodesic(m[0], initial_tangent_vec=m[1])(t))
 geom.append(S2_metric.geodesic(mean[0], initial_tangent_vec=mean[1])(t))
 for sample in samples:
     data.append(S2_metric.geodesic(sample[0], initial_tangent_vec=sample[1])(t))
 visSphere([data] + [meanvalue] + [geom], ['r'] + ['k'] + ['b'], 15)
+
+
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
 """

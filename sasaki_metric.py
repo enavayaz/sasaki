@@ -16,12 +16,9 @@ class SasakiMetric(RiemannianMetric):
     def __init__(self, metric: RiemannianMetric = None, Ns=3):
         self.metric = metric  # Riemannian metric of underlying space
         self.Ns = Ns  # Number of discretization steps
-        shape = (2, *metric.shape)
+        shape = (2, gs.prod(metric.shape))
 
-        super(SasakiMetric, self).__init__(2*metric.dim, shape=shape, default_point_type = 'matrix')
-
-    def zerovector(self):
-        return gs.zeros(self.shape)
+        super(SasakiMetric, self).__init__(2*metric.dim, shape=shape, default_point_type='matrix')
 
     def exp(self, tangent_vec, base_point, n_steps=None, **kwargs):
         """
@@ -29,29 +26,27 @@ class SasakiMetric(RiemannianMetric):
         velocity tangent_vec=[v0,w0] tangent vectors at base_point, where v0 horizontal and w0 vertical component
         Output: end point point=[pL, uL] with pL footpoint and uL tangent vector
         """
-        bs_pts = [base_point] if base_point.shape == self.shape else base_point
-        tngs = [tangent_vec] if tangent_vec.shape == self.shape else tangent_vec
+        # unflatten
+        bs_pts = base_point.reshape((-1, 2) + self.metric.shape)
+        tngs = tangent_vec.reshape(bs_pts.shape)
 
         metric = self.metric
         par_trans = metric.parallel_transport
         Ns = self.Ns if n_steps is None else n_steps
         eps = 1 / Ns
 
-        rslt = []
-        for bs_pt, tng in zip(bs_pts, tngs):
-            v0, w0 = tng[0], tng[1]
-            p0, u0 = bs_pt[0], bs_pt[1]
-            p, u = p0, u0
-            for j in range(Ns - 1):
-                p = metric.exp(eps * v0, p0)
-                u = par_trans(u0 + eps * w0, p0, None, p)
-                v = par_trans(v0 - eps * (metric.curvature(u0, w0, v0, p0)), p0, None, p)
-                w = par_trans(w0, p0, None, p)
-                p0, u0 = p, u
-                v0, w0 = v, w
-            rslt.append(gs.array([p, u]))
+        v0, w0 = tngs[:, 0], tngs[:, 1]
+        p0, u0 = bs_pts[:, 0], bs_pts[:, 1]
+        p, u = p0, u0
+        for j in range(Ns - 1):
+            p = metric.exp(eps * v0, p0)
+            u = par_trans(u0 + eps * w0, p0, None, p)
+            v = par_trans(v0 - eps * (metric.curvature(u0, w0, v0, p0)), p0, None, p)
+            w = par_trans(w0, p0, None, p)
+            p0, u0 = p, u
+            v0, w0 = v, w
 
-        return gs.array(rslt) if len(rslt) > 1 else rslt[0]
+        return gs.array([p, u]).reshape(base_point.shape)
 
     def log(self, point, base_point, n_steps=None, **kwargs):
         """
@@ -59,15 +54,17 @@ class SasakiMetric(RiemannianMetric):
         Output: structure vw with fields v and w; (v,w) is the initial vector of
         tangent bundle geodesic from (p0,u0) to (pL,uL)
         """
-        pts = [point] if point.shape == self.shape else point
-        bs_pts = [base_point] * len(pts) if base_point.shape == self.shape else base_point
+        # unflatten
+        pts = point.reshape((-1, 2) + self.metric.shape)
+        bs_pts = base_point.reshape((-1, 2) + self.metric.shape)
 
         metric = self.metric
         par_trans = metric.parallel_transport
         Ns = self.Ns if n_steps is None else n_steps
 
         rslt = []
-        for pt, bs_pt in zip(pts, bs_pts):
+        for i, pt in enumerate(pts):
+            bs_pt = bs_pts[i % len(bs_pts)]
             pu = self.geodesic_discrete(bs_pt, pt, Ns)
             p1, u1 = pu[1][0], pu[1][1]
             p0, u0 = bs_pt[0], bs_pt[1]
@@ -75,7 +72,7 @@ class SasakiMetric(RiemannianMetric):
             v = metric.log(point=p1, base_point=p0)
             rslt.append(Ns * gs.array([v, w]))
 
-        return gs.array(rslt) if len(rslt) > 1 else rslt[0]
+        return gs.array(rslt).reshape(point.shape)
 
     def geodesic_discrete(self, initial_point, end_point, n_steps=None, **kwargs):
         """
@@ -105,10 +102,8 @@ class SasakiMetric(RiemannianMetric):
             return .5 * h
 
         def grad(pu):
-            g = self.zerovector()  # initial gradient with zero vectors
-            #gp = g[0]
-            #gu = g[1]
-            g = gs.array([g] * (Ns - 1))
+            # initial gradient with zero vectors
+            g = []
             pu = [initial_point] + pu + [end_point]  # add boundary points to the list of points
             for j in range(Ns - 1):
                 p1, u1 = pu[j][0], pu[j][1]
@@ -117,13 +112,12 @@ class SasakiMetric(RiemannianMetric):
                 v, w = metric.log(p3, p2), par_trans(u3, p3, None, p2) - u2
                 gp = metric.log(p3, p2) + metric.log(p1, p2) + metric.curvature(u2, w, v, p2)
                 gu = par_trans(u3, p3, None, p2) - 2 * u2 + par_trans(u0, p0, None, p2)
-                # g.append([gp, gu])
-                g[j][0], g[j][1] = gp, gu
-            return -Ns * g
+                g.append([gp, gu])
+            return -Ns * gs.array(g)
 
         # Initial values for gradient_descent
         v = metric.log(pL, p0)
-        s = gs.linspace(0, 1, Ns + 1)
+        s = gs.linspace(0., 1., Ns + 1)
         pu_ini = []
         for i in range(1, Ns):
             p_ini = metric.exp(s[i] * v, p0)
@@ -133,24 +127,20 @@ class SasakiMetric(RiemannianMetric):
         return [initial_point] + x + [end_point]
 
     def squared_dist(self, point_a, point_b, **kwargs):
-        sqnorm = self.metric.squared_norm
-        logs = self.log(point_a, point_b, **kwargs)
-        b = point_b[0] if point_b.shape == self.shape else point_b[:, 0]
-        v = logs[0] if logs.shape == self.shape else logs[:, 0]
-        w = logs[1] if logs.shape == self.shape else logs[:, 1]
-        return sqnorm(v, b) + sqnorm(w, b)
+        # compute dist as norm of logarithm of point_a w.r.t. point_b
+        log = self.log(point_a, point_b, **kwargs)
+        return self.squared_norm(log, point_b)
 
     def dist(self, point_a, point_b, **kwargs):
-        return gs.linalg.sqrt(self.squared_dist(point_a, point_b, **kwargs))
+        return gs.sqrt(self.squared_dist(point_a, point_b, **kwargs))
 
     def squared_norm(self, vector, base_point=None):
-        assert base_point is not None
+        # unflatten
+        vector = vector.reshape((-1, 2) + self.metric.shape)
+        base_point = base_point.reshape((-1, 2) + self.metric.shape)
+        # compute Sasaki inner product via metric of underlying manifold
         sqnorm = self.metric.squared_norm
-        p = base_point[0] if base_point.shape == self.shape else base_point[:, 0]
-        v = vector[0] if vector.shape == self.shape else vector[:, 0]
-        w = vector[1] if vector.shape == self.shape else vector[:, 1]
-        return sqnorm(v, p) + sqnorm(w, p)
+        return sqnorm(vector[:, 0], base_point[:, 0]) + sqnorm(vector[:, 1], base_point[:, 0])
 
     def norm(self, vector, base_point=None):
-        assert base_point is not None
-        return gs.linalg.sqrt(self.squared_norm(vector, base_point))
+        return gs.sqrt(self.squared_norm(vector, base_point))
