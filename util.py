@@ -59,9 +59,9 @@ def visKen(points_list, color_list, size=10):
     ax = fig.add_subplot(111)
     for i in range(len(points_list)):
         for points in points_list:
-            points = gs.to_ndarray(points, to_ndim=2)
+            #points = gs.to_ndarray(points, to_ndim=2)
             for point in points:
-                ax.scatter(point[:, 0], point[:, 1], color=color_list[i], alpha=0.5)
+                ax.scatter(point[:, 0], point[:, 1], color=color_list[i], s=8, alpha=0.5)
     #ax.set_title("")
     #x.legend()
     plt.show()
