@@ -44,7 +44,7 @@ x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 x = [S2_metric.exp(sigma*S2_metric.log(x[i], m[0]), m[0]) for i in range(n_samples)]
 u = [m[1] + sigma*S2_metric.log(y[i], m[0]) for i in range(n_samples)]
-samples = [gs.array([x[i], u[i]]) for i in range(n_samples)]
+samples = gs.array([[x[i], u[i]] for i in range(n_samples)])
 
 print('Computing mean of geodesics')
 initial = initial_mean(samples, S2_metric)
@@ -73,23 +73,28 @@ KenMetric.shape = Ken.shape # fix: shape not set consistently
 sas = SasakiMetric(KenMetric)
 samples = [Ken.projection(samples[i]) for i in range(n_samples)]
 visKen([samples], ['r'])
-samples = gs.array(samples).reshape(n_subjects, n_trj, k_landmarks, dim)
+samples = gs.reshape(gs.array(samples), (n_subjects, n_trj, k_landmarks, dim))
 # Regression
 # ln 266 in pre_shape.py -> add full_matrices=False to svd call (otherwise no autodiff)
-reg = GeodesicRegression(Ken, KenMetric, method="riemannian", initialization="warm_start")
+reg = GeodesicRegression(Ken, KenMetric, center_X=False, method="riemannian", initialization="warm_start")
 # TODO
 geos, geodesics = [], []
-x = gs.linspace(0, 1, n_trj)
+x = gs.linspace(0., 1., n_trj)
 for trj in samples:
-    #Change backend to tensorflow, autodiff or pytorch and samples to array
+    # set warm start
     reg.intercept_ = trj[0]
     reg.coef_ = KenMetric.log(trj[-1], trj[0])
+    # compute best fitting geodesic
     reg.fit(x, trj, compute_training_score=True)
     print('R^2:', reg.training_score_)
     p, u = reg.intercept_, reg.coef_
-    geos.append(gs.array([p, u]))
+    geos.append(gs.reshape([p, u], sas.shape))
+
     geodesic = KenMetric.geodesic(initial_point=p, initial_tangent_vec=u)(t)
     geodesics.append(geodesic)
+
+    if len(geos) > 2: break
+
 # Tangent PCA
 mean_gs = FrechetMean(sas)
 mean_gs.fit(geos)

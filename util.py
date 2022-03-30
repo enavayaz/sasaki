@@ -8,15 +8,13 @@ import numpy as np
 matplotlib.use("Agg")  # NOQA
 
 def initial_mean(pu, metric):
-    mean_ini = pu[0]
-    a = gs.array(pu)
+    # compute mean of base points
     mean_p = FrechetMean(metric)
-    mean_p.fit(a[:, 0])
-    mean_ini[0] = mean_p.estimate_
-    a[:, 1] = gs.array(
-        [metric.parallel_transport(a[j, 1], a[j, 0], end_point=mean_ini[0]) for j in range(len(pu))])
-    mean_ini[1] = gs.mean(a[:, 1], 0)
-    return mean_ini
+    mean_p.fit(pu[:, 0])
+    # compute mean of tangent vectors
+    PT = lambda p, u: metric.parallel_transport(u, p, end_point=mean_p.estimate_)
+    mean_v = gs.mean([PT(*pu_i) for pu_i in pu], 0)
+    return gs.array([mean_p.estimate_, mean_v])
 
 def gradient_descent(x_ini, grad, exp, loss=None, lrate=0.1, max_iter=100, tol=1e-6):
     """

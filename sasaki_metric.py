@@ -27,8 +27,8 @@ class SasakiMetric(RiemannianMetric):
         Output: end point point=[pL, uL] with pL footpoint and uL tangent vector
         """
         # unflatten
-        bs_pts = base_point.reshape((-1, 2) + self.metric.shape)
-        tngs = tangent_vec.reshape(bs_pts.shape)
+        bs_pts = gs.reshape(base_point, (-1, 2) + self.metric.shape)
+        tngs = gs.reshape(tangent_vec, bs_pts.shape)
 
         metric = self.metric
         par_trans = metric.parallel_transport
@@ -46,7 +46,7 @@ class SasakiMetric(RiemannianMetric):
             p0, u0 = p, u
             v0, w0 = v, w
 
-        return gs.array([p, u]).reshape(base_point.shape)
+        return gs.reshape(gs.array([p, u]), base_point.shape)
 
     def log(self, point, base_point, n_steps=None, **kwargs):
         """
@@ -55,8 +55,8 @@ class SasakiMetric(RiemannianMetric):
         tangent bundle geodesic from (p0,u0) to (pL,uL)
         """
         # unflatten
-        pts = point.reshape((-1, 2) + self.metric.shape)
-        bs_pts = base_point.reshape((-1, 2) + self.metric.shape)
+        pts = gs.reshape(point, (-1, 2) + self.metric.shape)
+        bs_pts = gs.reshape(base_point, (-1, 2) + self.metric.shape)
 
         metric = self.metric
         par_trans = metric.parallel_transport
@@ -72,7 +72,7 @@ class SasakiMetric(RiemannianMetric):
             v = metric.log(point=p1, base_point=p0)
             rslt.append(Ns * gs.array([v, w]))
 
-        return gs.array(rslt).reshape(point.shape)
+        return gs.reshape(gs.array(rslt), point.shape)
 
     def geodesic_discrete(self, initial_point, end_point, n_steps=None, **kwargs):
         """
@@ -136,8 +136,8 @@ class SasakiMetric(RiemannianMetric):
 
     def squared_norm(self, vector, base_point=None):
         # unflatten
-        vector = vector.reshape((-1, 2) + self.metric.shape)
-        base_point = base_point.reshape((-1, 2) + self.metric.shape)
+        vector = gs.reshape(vector, (-1, 2) + self.metric.shape)
+        base_point = gs.reshape(base_point, (-1, 2) + self.metric.shape)
         # compute Sasaki inner product via metric of underlying manifold
         sqnorm = self.metric.squared_norm
         return sqnorm(vector[:, 0], base_point[:, 0]) + sqnorm(vector[:, 1], base_point[:, 0])
