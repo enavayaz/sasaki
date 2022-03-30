@@ -1,14 +1,11 @@
 import matplotlib
 import matplotlib.pylab as plt
-import matplotlib.animation as animation
 import geomstats.backend as gs
 import geomstats.visualization as visualization
 from geomstats.learning.frechet_mean import FrechetMean
-from geomstats.geometry.riemannian_metric import RiemannianMetric
 import logging
 import numpy as np
-import csv
-# matplotlib.use("Agg")  # NOQA
+matplotlib.use("Agg")  # NOQA
 
 def initial_mean(pu, metric):
     mean_ini = pu[0]
@@ -54,7 +51,7 @@ def visSphere(points_list, color_list, size=15):
             sphere.draw_points(ax, points=points, color=color_list[i], marker=".")
     plt.show()
 
-def visKen(points_list, color_list, size=10):
+def visKen(points_list, color_list, size=10):  # TODO?
     fig = plt.figure(figsize=(size, size))
     ax = fig.add_subplot(111)
     for i in range(len(points_list)):
@@ -66,7 +63,7 @@ def visKen(points_list, color_list, size=10):
     #x.legend()
     plt.show()
 
-def visKenPCA(geos, variance, samples, mean):
+def visKenPCA(geos, variance, samples, mean):  # TODO
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
     xticks = gs.arange(1, 2 + 1, 1)

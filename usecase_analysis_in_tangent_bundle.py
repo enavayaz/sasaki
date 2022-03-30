@@ -97,7 +97,7 @@ mean = mean_gs.estimate_
 mean_geo = KenMetric.geodesic(initial_point=mean[0], initial_tangent_vec=mean[1])(t)
 geodesics.append(mean_geo)
 geodesics = gs.array(geodesics).reshape(n_subjects+1, Nt*k_landmarks, dim)
-visKen([geodesics[0:n_trj-1]]+[geodesics[-1]], ['b']+['k'])
+visKen([geodesics[0:n_trj-1]]+[geodesics[-1]], ['b']+['k'])  # TODO
 # TPCA
 tpca = TangentPCA(metric=KenMetric, n_components=2)
 tpca = tpca.fit(geos, base_point=mean)
