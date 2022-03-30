@@ -8,6 +8,8 @@
     along curves are orthogonal to their fibres, and restriction to any tangent space is Euclidean.
 ## Longitudinal analysis and mean geodesic
 
+## Something on Implementation: Little bug in geomstats/pre_shape.py, thus as standalone in this project??? 
+
 ## Literatur
     For Details and computational aspects, see:
 -  [A Hierarchical Geodesic Model for Longitudinal Analysis on Manifolds](https://doi.org/10.1007/s10851-022-01079-x)

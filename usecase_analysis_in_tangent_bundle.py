@@ -12,6 +12,7 @@ t = gs.linspace(0, 1, Nt)
 """
 First Application: Discrete Geodesics on the 2-Sphere
 """
+
 S2 = Hypersphere(dim=2)
 S2_metric = S2.metric
 # bypass geomstats bug: shape property of HypersphereMetric not initialized consistently
@@ -34,8 +35,9 @@ for j in range(1, len(z) - 1):
     geods.append(S2_metric.geodesic(p1, initial_tangent_vec=u1)(t))
 geo_list += [geods]
 visSphere(geo_list, ['r']+['b'], 15)
+
 """
-Second Application: Clustering via Regression
+Generate random sample points in tangent bundle with mean m
 """
 m = gs.array([[0, -1.0, 0], [0, 0, 1.0]])
 
