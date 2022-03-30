@@ -34,11 +34,10 @@ First Application: Discrete Geodesics on the 2-Sphere
 #     geods.append(S2_metric.geodesic(p1, initial_tangent_vec=u1)(t))
 # geo_list += [geods]
 # visSphere(geo_list, ['r']+['b'], 15)
-# """
-# Second Application: Clustering via Regression
-# """
+#"""
+#Generate random sample points in tangent bundle with mean m
+#"""
 # m = gs.array([[0, -1.0, 0], [0, 0, 1.0]])
-#
 # n_samples, sigma = 10, gs.pi/12
 # x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
 # y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
