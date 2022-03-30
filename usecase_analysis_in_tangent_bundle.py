@@ -100,7 +100,7 @@ for trj in samples:
 # Tangent PCA
 mean_gs = FrechetMean(sas)
 mean_gs.fit(geos)
-mean = mean_gs.estimate_
+mean = gs.reshape(mean_gs.estimate_, (2, *Ken.shape))
 mean_geo = KenMetric.geodesic(initial_point=mean[0], initial_tangent_vec=mean[1])(t)
 geodesics.append(mean_geo)
 geodesics = gs.array(geodesics).reshape(n_subjects+1, Nt*k_landmarks, dim)
