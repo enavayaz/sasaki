@@ -12,53 +12,53 @@ t = gs.linspace(0, 1, Nt)
 """
 First Application: Discrete Geodesics on the 2-Sphere
 """
-# S2 = Hypersphere(dim=2)
-# S2_metric = S2.metric
-# # bypass geomstats bug: shape property of HypersphereMetric not initialized consistently
-# if S2.default_coords_type == 'extrinsic':
-#     S2_metric.shape = (S2.dim+1,)
-# sas = SasakiMetric(S2.metric)
-# p0, u0 = gs.array([0., -1, 0]), gs.array([1., 0, 1])
-# pu0 = gs.array([p0, u0])
-# pL, uL = gs.array([1., 0, 0]), gs.array([0., 1, 1])
-# puL = gs.array([pL, uL])
-# print('Computing shortest path of geodesics')
-# z = sas.geodesic_discrete(pu0, puL)
-# geo_list, color_list = [], []
-# geods0L, geods = [], []
-# geods0L.append(S2_metric.geodesic(p0, initial_tangent_vec=u0)(t))
-# geods0L.append(S2_metric.geodesic(pL, initial_tangent_vec=uL)(t))
-# geo_list = [geods0L]
-# for j in range(1, len(z) - 1):
-#     p1, u1 = z[j][0], z[j][1]
-#     geods.append(S2_metric.geodesic(p1, initial_tangent_vec=u1)(t))
-# geo_list += [geods]
-# visSphere(geo_list, ['r']+['b'], 15)
-# """
-# Second Application: Clustering via Regression
-# """
-# m = gs.array([[0, -1.0, 0], [0, 0, 1.0]])
-#
-# n_samples, sigma = 10, gs.pi/12
-# x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
-# y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
-# x = [S2_metric.exp(sigma*S2_metric.log(x[i], m[0]), m[0]) for i in range(n_samples)]
-# u = [m[1] + sigma*S2_metric.log(y[i], m[0]) for i in range(n_samples)]
-# samples = [gs.array([x[i], u[i]]) for i in range(n_samples)]
-#
-# print('Computing mean of geodesics')
-# initial = initial_mean(samples, S2_metric)
-# mean_gs = FrechetMean(sas, init_point=initial)
-# mean_gs.fit(samples)
-# mean = mean_gs.estimate_
-# # mean = sas.mean(samples)
-#
-# data, meanvalue, geom = [], [], []
-# meanvalue.append(S2_metric.geodesic(m[0], initial_tangent_vec=m[1])(t))
-# geom.append(S2_metric.geodesic(mean[0], initial_tangent_vec=mean[1])(t))
-# for sample in samples:
-#     data.append(S2_metric.geodesic(sample[0], initial_tangent_vec=sample[1])(t))
-# visSphere([data] + [meanvalue] + [geom], ['r'] + ['k'] + ['b'], 15)
+S2 = Hypersphere(dim=2)
+S2_metric = S2.metric
+# bypass geomstats bug: shape property of HypersphereMetric not initialized consistently
+if S2.default_coords_type == 'extrinsic':
+    S2_metric.shape = (S2.dim+1,)
+sas = SasakiMetric(S2.metric)
+p0, u0 = gs.array([0., -1, 0]), gs.array([1., 0, 1])
+pu0 = gs.array([p0, u0])
+pL, uL = gs.array([1., 0, 0]), gs.array([0., 1, 1])
+puL = gs.array([pL, uL])
+print('Computing shortest path of geodesics')
+z = sas.geodesic_discrete(pu0, puL)
+geo_list, color_list = [], []
+geods0L, geods = [], []
+geods0L.append(S2_metric.geodesic(p0, initial_tangent_vec=u0)(t))
+geods0L.append(S2_metric.geodesic(pL, initial_tangent_vec=uL)(t))
+geo_list = [geods0L]
+for j in range(1, len(z) - 1):
+    p1, u1 = z[j][0], z[j][1]
+    geods.append(S2_metric.geodesic(p1, initial_tangent_vec=u1)(t))
+geo_list += [geods]
+visSphere(geo_list, ['r']+['b'], 15)
+"""
+Second Application: Clustering via Regression
+"""
+m = gs.array([[0, -1.0, 0], [0, 0, 1.0]])
+
+n_samples, sigma = 10, gs.pi/12
+x = S2.random_riemannian_normal(m[0], n_samples=n_samples)
+y = S2.random_riemannian_normal(m[0], n_samples=n_samples)
+x = [S2_metric.exp(sigma*S2_metric.log(x[i], m[0]), m[0]) for i in range(n_samples)]
+u = [m[1] + sigma*S2_metric.log(y[i], m[0]) for i in range(n_samples)]
+samples = [gs.array([x[i], u[i]]) for i in range(n_samples)]
+
+print('Computing mean of geodesics')
+initial = initial_mean(samples, S2_metric)
+mean_gs = FrechetMean(sas, init_point=initial)
+mean_gs.fit(samples)
+mean = mean_gs.estimate_
+# mean = sas.mean(samples)
+
+data, meanvalue, geom = [], [], []
+meanvalue.append(S2_metric.geodesic(m[0], initial_tangent_vec=m[1])(t))
+geom.append(S2_metric.geodesic(mean[0], initial_tangent_vec=mean[1])(t))
+for sample in samples:
+    data.append(S2_metric.geodesic(sample[0], initial_tangent_vec=sample[1])(t))
+visSphere([data] + [meanvalue] + [geom], ['r'] + ['k'] + ['b'], 15)
 
 """
 Third application: Discrete Geodesics and Mean Geodesic in Kendall's Shape Space
