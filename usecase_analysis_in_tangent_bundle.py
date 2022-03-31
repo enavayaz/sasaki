@@ -1,4 +1,7 @@
-from geomstats.geometry.pre_shape import PreShapeSpace, KendallShapeMetric
+# ln 266 in pre_shape.py -> add full_matrices=False to svd call (otherwise no autodiff)
+#from geomstats.geometry.pre_shape import PreShapeSpace, KendallShapeMetric
+from pre_shape_autodiff import PreShapeSpace, KendallShapeMetric
+
 from sasaki_metric import SasakiMetric
 from geomstats.geometry.hypersphere import Hypersphere
 from geomstats.learning.frechet_mean import FrechetMean
@@ -77,7 +80,6 @@ samples = [Ken.projection(samples[i]) for i in range(n_samples)]
 visKen([samples], ['r'])
 samples = gs.reshape(gs.array(samples), (n_subjects, n_trj, k_landmarks, dim))
 # Regression
-# ln 266 in pre_shape.py -> add full_matrices=False to svd call (otherwise no autodiff)
 reg = GeodesicRegression(Ken, KenMetric, center_X=False, method="riemannian", initialization="warm_start")
 # TODO
 geos, geodesics = [], []
@@ -95,8 +97,6 @@ for trj in samples:
     geodesic = KenMetric.geodesic(initial_point=p, initial_tangent_vec=u)(t)
     geodesics.append(geodesic)
 
-    if len(geos) > 2: break
-
 # Tangent PCA
 mean_gs = FrechetMean(sas)
 mean_gs.fit(geos)
@@ -105,6 +105,7 @@ mean_geo = KenMetric.geodesic(initial_point=mean[0], initial_tangent_vec=mean[1]
 geodesics.append(mean_geo)
 geodesics = gs.array(geodesics).reshape(n_subjects+1, Nt*k_landmarks, dim)
 visKen([geodesics[0:n_trj-1]]+[geodesics[-1]], ['b']+['k'])  # TODO
+
 # TPCA
 tpca = TangentPCA(metric=KenMetric, n_components=2)
 tpca = tpca.fit(geos, base_point=mean)
