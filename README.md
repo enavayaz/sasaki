@@ -10,7 +10,7 @@
 
 ## Something on Implementation: Little bug in geomstats/pre_shape.py, thus as standalone in this project??? 
 
-## Literatur
+## References
     For Details and computational aspects, see:
 -  [A Hierarchical Geodesic Model for Longitudinal Analysis on Manifolds](https://doi.org/10.1007/s10851-022-01079-x)
 -  [Sasaki Metrics for Analysis of Longitudinal Data on Manifolds](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4270017)
